@@ -37,7 +37,7 @@ KoboldCPP is a powerful and portable solution for running Large Language Models 
 ```bash
 git clone https://github.com/jabberjabberjabber/koboldapi-python
 cd koboldapi-python
-pip install -r requirements.txt
+pip install git+https://github.com/jabberjabberjabber/koboldapi-python.git
 ```
 
 ### First Steps
