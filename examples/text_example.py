@@ -6,12 +6,13 @@ import asyncio
 import json
 from typing import List, Dict, Tuple, Optional, Union
 
-from koboldapi import KoboldAPIConfig, KoboldAPICore
-from koboldapi.chunking import ChunkingProcessor
+from koboldapi import KoboldAPICore
+from koboldapi.chunking.processor import ChunkingProcessor
 
 def process_text(core: KoboldAPICore, 
                 task: str, 
-                file_path: Union[str, Path]) -> Tuple[List[str], Dict]:
+                file_path: Union[str, Path],
+                translation_language: str) -> Tuple[List[str], Dict]:
     """Process text document with specified task.
     
     Args:
@@ -28,7 +29,7 @@ def process_text(core: KoboldAPICore,
         'translate': {
             'chunk_size': int(max_context * 0.4),
             'instruction': (
-                f"Translate the text into {core.config.translation_language}. "
+                f"Translate the text into {translation_language}. "
                 "Maintain linguistic flourish and authorial style as much as possible. "
                 "Write the full contents without condensing or modernizing."
             )
@@ -122,54 +123,43 @@ def main():
                        help='Output file path')
     
     # Optional configuration
-    parser.add_argument('--config', help='Path to config file')
+    #parser.add_argument('--config', help='Path to config file')
     parser.add_argument('--api-url', default='http://localhost:5001',
                        help='KoboldCPP API URL')
-    parser.add_argument('--templates', default='templates',
+    parser.add_argument('--templates', default='./templates',
                        help='Templates directory path')
     parser.add_argument('--language', default='English',
                        help='Target language for translation')
     parser.add_argument('--metadata', help='Save metadata to JSON file')
     
     args = parser.parse_args()
+    # Set up configuration
+    config_dict = {
+        "api_url": args.api_url,
+        "api_password": "",  
+        "templates_directory": args.templates,
+    }
+    core = KoboldAPICore(config_dict)
+    results, metadata = process_text(core, args.task, args.input, args.language)
     
-    try:
-        # Set up configuration
-        if args.config:
-            config = KoboldAPIConfig.from_json(args.config)
-        else:
-            config = KoboldAPIConfig(
-                api_url=args.api_url,
-                api_password="",
-                templates_directory=args.templates,
-                translation_language=args.language
-            )
-        
-        # Initialize core and process file
-        core = KoboldAPICore(config)
-        results, metadata = process_text(core, args.task, args.input)
-        
-        # Save results
-        output_path = Path(args.output)
-        output_path.write_text(
-            "\n\n".join(results),
+    # Save results
+    output_path = Path(args.output)
+    output_path.write_text(
+        "\n\n".join(results),
+        encoding='utf-8'
+    )
+    print(f"\nOutput written to {output_path}")
+    
+    # Save metadata if requested
+    if args.metadata:
+        metadata_path = Path(args.metadata)
+        metadata_path.write_text(
+            json.dumps(metadata, indent=2),
             encoding='utf-8'
         )
-        print(f"\nOutput written to {output_path}")
+        print(f"Metadata written to {metadata_path}")
         
-        # Save metadata if requested
-        if args.metadata:
-            metadata_path = Path(args.metadata)
-            metadata_path.write_text(
-                json.dumps(metadata, indent=2),
-                encoding='utf-8'
-            )
-            print(f"Metadata written to {metadata_path}")
-            
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
-        
+    
     return 0
 
 if __name__ == '__main__':

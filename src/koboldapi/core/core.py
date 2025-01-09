@@ -1,30 +1,30 @@
 from typing import Dict, Union
 from pathlib import Path
 
-from .config import KoboldAPIConfig
 from .api import KoboldAPI
 from .templates import InstructTemplate
+from .config import KoboldAPIConfig
 
 class KoboldAPICore:
     """ Core functionality shared across all LLM tools """
     
-    def __init__(self, config_path):
-        """ Initialize core services
+    def __init__(self, config_dict: dict):
+        """Initialize with a config dict"""
         
-            Args:
-                config_path: Path to JSON config file
-        """
-        self.config = KoboldAPIConfig.from_json(config_path)
+        
         self.api_client = KoboldAPI(
-            self.config.api_url, 
-            self.config.api_password
+            config_dict.get('api_url', 'http://localhost:5000'),
+            config_dict.get('api_password', '')
         )
         self.template_wrapper = InstructTemplate(
-            self.config.templates_directory,
-            self.config.api_url
+            config_dict.get('templates_directory', './templates'),
+            config_dict.get('api_url', 'http://localhost:5000')
         )
+        # Store the whole config dict if you need other values later
+        self.config_dict = config_dict
         
-    def get_model_info(self) -> Dict[str, Union[str, int]]:
+            
+    def get_model_info(self):
         """ Get current model details """
         return {
             'name': self.api_client.get_model(),
@@ -43,9 +43,9 @@ class KoboldAPICore:
     def get_generation_params(self) -> Dict[str, Union[float, int]]:
         """ Get current generation parameters """
         return {
-            'temperature': self.config.temp,
-            'top_k': self.config.top_k,
-            'top_p': self.config.top_p,
-            'rep_pen': self.config.rep_pen,
-            'min_p': self.config.min_p
+            'temperature': KoboldAPIConfig.temp,
+            'top_k': KoboldAPIConfig.top_k,
+            'top_p': KoboldAPIConfig.top_p,
+            'rep_pen': KoboldAPIConfig.rep_pen,
+            'min_p': KoboldAPIConfig.min_p
         }
