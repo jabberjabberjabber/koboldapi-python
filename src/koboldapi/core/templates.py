@@ -126,6 +126,11 @@ class InstructTemplate:
                 bos_token="",
                 eos_token=""
             ))
+        # returns both adapter and jinja templates because
+        # the goal is to compare them, but the adapters work better
+        # at the moment. Make sure to pick the one you want 
+        # wrapped[0] is adapter
+        # wrapped[1] is jinja2 / gguf metadata
         return wrapped
         
 if __name__ == '__main__':
