@@ -13,7 +13,7 @@ def process_text(core: KoboldAPICore,
                 task: str, 
                 file_path: Union[str, Path],
                 translation_language: str) -> Tuple[List[str], Dict]:
-    """Process text document with specified task.
+    """ Process text document with specified task.
     
     Args:
         core: KoboldAPICore instance
@@ -56,29 +56,21 @@ def process_text(core: KoboldAPICore,
         }
     }
 
-    # Initialize chunker
     chunker = ChunkingProcessor(
         core.api_client,
         max_chunk_length=task_configs[task]['chunk_size']
     )
-    
-    # Process text in chunks
     chunks, metadata = chunker.chunk_file(file_path)
     results = []
-    
     print(f"\nProcessing {len(chunks)} chunks...")
-    
     for i, (chunk, _) in enumerate(chunks, 1):
         print(f"\nChunk {i}/{len(chunks)}:")
         
-        # Wrap prompt with template
         wrapped = core.template_wrapper.wrap_prompt(
             instruction=task_configs[task]['instruction'],
             content=chunk,
             system_instruction="You are a helpful assistant."
         )
-        
-        # Generate response with streaming
         try:
             generated_text = ""
             async def stream():
@@ -97,14 +89,11 @@ def process_text(core: KoboldAPICore,
         except Exception as e:
             print(f"\nError processing chunk {i}: {e}", file=sys.stderr)
             results.append(f"[Error processing chunk {i}]")
-    
-    # Add metadata
     metadata.update({
         'Processing-Time': datetime.now().isoformat(),
         'Task': task,
         'Chunks-Processed': len(chunks)
     })
-    
     return results, metadata
 
 def main():
@@ -122,7 +111,6 @@ def main():
     parser.add_argument('--output', required=True,
                        help='Output file path')
     
-    # Optional configuration
     #parser.add_argument('--config', help='Path to config file')
     parser.add_argument('--api-url', default='http://localhost:5001',
                        help='KoboldCPP API URL')
@@ -131,9 +119,7 @@ def main():
     parser.add_argument('--language', default='English',
                        help='Target language for translation')
     parser.add_argument('--metadata', help='Save metadata to JSON file')
-    
     args = parser.parse_args()
-    # Set up configuration
     config_dict = {
         "api_url": args.api_url,
         "api_password": "",  
@@ -141,16 +127,12 @@ def main():
     }
     core = KoboldAPICore(config_dict)
     results, metadata = process_text(core, args.task, args.input, args.language)
-    
-    # Save results
     output_path = Path(args.output)
     output_path.write_text(
         "\n\n".join(results),
         encoding='utf-8'
     )
     print(f"\nOutput written to {output_path}")
-    
-    # Save metadata if requested
     if args.metadata:
         metadata_path = Path(args.metadata)
         metadata_path.write_text(
@@ -158,8 +140,6 @@ def main():
             encoding='utf-8'
         )
         print(f"Metadata written to {metadata_path}")
-        
-    
     return 0
 
 if __name__ == '__main__':
