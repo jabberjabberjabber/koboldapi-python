@@ -63,12 +63,12 @@ print(response)
 
 ### Configuration Management
 
-The `LLMConfig` class provides a clean way to manage your API settings:
+The `KoboldAPIConfig` class provides a clean way to manage your API settings:
 
 ```python
-from koboldapi.config import LLMConfig
+from koboldapi.config import KoboldAPIConfig
 
-config = LLMConfig(
+config = KoboldAPIConfig(
     api_url="http://localhost:5001",
     api_password=None,  # If you've set an API password
     templates_directory="./templates",
@@ -80,7 +80,7 @@ config = LLMConfig(
 config.to_json("config.json")
 
 # Load existing configuration
-config = LLMConfig.from_json("config.json")
+config = KoboldAPIConfig.from_json("config.json")
 ```
 
 ### Template Management

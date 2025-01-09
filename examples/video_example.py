@@ -8,8 +8,8 @@ import glob
 import os
 from typing import List, Dict
 
-from koboldapi import KoboldAPI, InstructTemplate, LLMConfig
-from koboldapi.core.core import LLMToolsCore
+from koboldapi import KoboldAPI, InstructTemplate, KoboldAPIConfig
+from koboldapi.core.core import KoboldAPICore
 
 # recommended models:
 # minicpm-v-2.6, qvq
@@ -62,14 +62,14 @@ def get_scene_frames(video_path: str, threshold: float = 0.1,
             for frame_path in sorted(tmpdir.glob(f'scene_*.{format}'))
         ]
 
-def analyze_video(video_path: str, config: LLMConfig,
+def analyze_video(video_path: str, config: KoboldAPIConfig,
                  max_frames: int = 84, output_dir: str = None,
                  batch_size: int = 4) -> Dict:
     """Analyze video using KoboldCPP API.
 
     Args:
         video_path: Path to video file
-        config: LLMConfig instance
+        config: KoboldAPIConfig instance
         max_frames: Maximum number of frames to process
         output_dir: Directory to save results (defaults to video location)
         batch_size: Number of frames to process in each batch
@@ -77,7 +77,7 @@ def analyze_video(video_path: str, config: LLMConfig,
     Returns:
         Dict containing analysis results and metadata
     """
-    core = LLMToolsCore(config)
+    core = KoboldAPICore(config)
     client = core.api
     wrapper = core.template
     
@@ -166,9 +166,9 @@ def main():
     try:
         # Set up configuration
         if args.config:
-            config = LLMConfig.from_json(args.config)
+            config = KoboldAPIConfig.from_json(args.config)
         else:
-            config = LLMConfig(
+            config = KoboldAPIConfig(
                 api_url=args.api_url,
                 api_password="",
                 templates_directory=args.template_dir

@@ -1,7 +1,7 @@
 from typing import Dict, Union
 from pathlib import Path
 
-from .config import LLMConfig
+from .config import KoboldAPIConfig
 from .api import KoboldAPI
 from .templates import InstructTemplate
 
@@ -14,7 +14,7 @@ class KoboldAPICore:
             Args:
                 config_path: Path to JSON config file
         """
-        self.config = LLMConfig.from_json(config_path)
+        self.config = KoboldAPIConfig.from_json(config_path)
         self.api_client = KoboldAPI(
             self.config.api_url, 
             self.config.api_password

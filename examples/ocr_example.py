@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Optional, List, Tuple
 import sys
 
-from koboldapi import LLMConfig, LLMToolsCore
-from koboldapi.core.core import LLMToolsCore
+from koboldapi import KoboldAPIConfig, KoboldAPICore
+from koboldapi.core.core import KoboldAPICore
 
 # recommended models:
 # minicpm-v-2.6, qvq, qwen2vl
@@ -25,12 +25,12 @@ def encode_image(file_path: Path) -> Optional[str]:
         print(f"Error encoding {file_path}: {e}", file=sys.stderr)
         return None
 
-def process_image(core: LLMToolsCore, image_path: Path, 
+def process_image(core: KoboldAPICore, image_path: Path, 
                  instruction: str) -> Tuple[Optional[str], Path]:
     """Process a single image through the LLM.
     
     Args:
-        core: LLMToolsCore instance
+        core: KoboldAPICore instance
         image_path: Path to image file
         instruction: Instruction for the LLM
         
@@ -68,19 +68,19 @@ def process_image(core: LLMToolsCore, image_path: Path,
         print(f"Error processing {image_path}: {e}", file=sys.stderr)
         return None, image_path
 
-def process_images(image_paths: List[Path], config: LLMConfig, 
+def process_images(image_paths: List[Path], config: KoboldAPIConfig, 
                   instruction: str) -> int:
     """Process multiple images through the LLM.
     
     Args:
         image_paths: List of image file paths
-        config: LLMConfig instance 
+        config: KoboldAPIConfig instance 
         instruction: Instruction for the LLM
         
     Returns:
         Exit code (0 for success, 1 for any failures)
     """
-    core = LLMToolsCore(config)
+    core = KoboldAPICore(config)
     had_error = False
     
     for i, image_path in enumerate(image_paths, 1):
@@ -117,9 +117,9 @@ def main():
     try:
         # Set up configuration
         if args.config:
-            config = LLMConfig.from_json(args.config)
+            config = KoboldAPIConfig.from_json(args.config)
         else:
-            config = LLMConfig(
+            config = KoboldAPIConfig(
                 api_url=args.api_url,
                 api_password="",
                 templates_directory=args.templates

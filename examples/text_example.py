@@ -6,16 +6,16 @@ import asyncio
 import json
 from typing import List, Dict, Tuple, Optional, Union
 
-from koboldapi import LLMConfig, LLMToolsCore
+from koboldapi import KoboldAPIConfig, KoboldAPICore
 from koboldapi.chunking import ChunkingProcessor
 
-def process_text(core: LLMToolsCore, 
+def process_text(core: KoboldAPICore, 
                 task: str, 
                 file_path: Union[str, Path]) -> Tuple[List[str], Dict]:
     """Process text document with specified task.
     
     Args:
-        core: LLMToolsCore instance
+        core: KoboldAPICore instance
         task: Task type ('translate', 'summary', 'correct', 'distill')
         file_path: Path to text file
         
@@ -136,9 +136,9 @@ def main():
     try:
         # Set up configuration
         if args.config:
-            config = LLMConfig.from_json(args.config)
+            config = KoboldAPIConfig.from_json(args.config)
         else:
-            config = LLMConfig(
+            config = KoboldAPIConfig(
                 api_url=args.api_url,
                 api_password="",
                 templates_directory=args.templates,
@@ -146,7 +146,7 @@ def main():
             )
         
         # Initialize core and process file
-        core = LLMToolsCore(config)
+        core = KoboldAPICore(config)
         results, metadata = process_text(core, args.task, args.input)
         
         # Save results

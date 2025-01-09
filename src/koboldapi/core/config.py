@@ -3,7 +3,7 @@ from typing import Optional
 import json
 
 @dataclass
-class LLMConfig:
+class KoboldAPIConfig:
     """ Configuration for LLM tools and API connections """
     api_url: str
     api_password: str
