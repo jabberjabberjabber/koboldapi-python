@@ -63,24 +63,42 @@ print(response)
 
 ### Configuration Management
 
-The `KoboldAPIConfig` class provides a clean way to manage your API settings:
+The `KoboldAPIConfig` class manages configuration settings for the API client. You can either create a config programmatically or load it from a JSON file:
 
 ```python
-from koboldapi.config import KoboldAPIConfig
+from koboldapi import KoboldAPIConfig
 
+# Create config programmatically
 config = KoboldAPIConfig(
     api_url="http://localhost:5001",
-    api_password=None,  # If you've set an API password
+    api_password="",
     templates_directory="./templates",
-    temperature=0.7,
-    top_p=0.9
+    translation_language="English",
+    temp=0.7,
+    top_k=40,
+    top_p=0.9,
+    rep_pen=1.1
 )
 
-# Save configuration
-config.to_json("config.json")
-
-# Load existing configuration
+# Or load from JSON file
 config = KoboldAPIConfig.from_json("config.json")
+
+# Save config to file
+config.to_json("new_config.json")
+```
+
+Example config.json:
+```json
+{
+    "api_url": "http://localhost:5001",
+    "api_password": "",
+    "templates_directory": "./templates",
+    "translation_language": "English",
+    "temp": 0.7,
+    "top_k": 40,
+    "top_p": 0.9,
+    "rep_pen": 1.1
+}
 ```
 
 ### Template Management
@@ -100,116 +118,194 @@ wrapped_prompt = template.wrap_prompt(
 )
 ```
 
-## Common Tasks
+## Example Applications
 
-### Text Generation
+### Text Processing
+
+The library includes example scripts for various text processing tasks:
 
 ```python
-# Basic generation
-text = api.generate(
-    prompt="Write a short story:",
-    max_length=200,
-    temperature=0.7,
-    top_p=0.9,
-    top_k=40,
-    rep_pen=1.1
+from koboldapi import KoboldAPICore
+from koboldapi.chunking.processor import ChunkingProcessor
+
+# Initialize core with config
+config = {
+    "api_url": "http://localhost:5001",
+    "templates_directory": "./templates"
+}
+core = KoboldAPICore(config)
+
+# Process a text file
+processor = ChunkingProcessor(core.api_client, max_chunk_length=2048)
+chunks, metadata = processor.chunk_file("document.txt")
+
+# Generate summary for each chunk
+for chunk, _ in chunks:
+    summary = core.api_client.generate(
+        prompt=core.template_wrapper.wrap_prompt(
+            instruction="Summarize this text",
+            content=chunk
+        )[0],
+        max_length=200
+    )
+    print(summary)
+```
+
+### Image Processing
+
+Process images:
+
+```python
+from koboldapi import KoboldAPICore
+from pathlib import Path
+
+# Initialize core
+config = {
+    "api_url": "http://localhost:5001",
+    "templates_directory": "./templates"
+}
+core = KoboldAPICore(config)
+
+# Process image
+image_path = Path("image.png")
+with open(image_path, "rb") as f:
+    image_data = base64.b64encode(f.read()).decode()
+
+result = core.api_client.generate(
+    prompt=core.template_wrapper.wrap_prompt(
+        instruction="Extract text from this image",
+        system_instruction="You are an OCR system"
+    )[0],
+    images=[image_data],
+    temperature=0.1
 )
-
-# Streaming generation
-async for token in api.stream_generate(
-    prompt="Write a poem:",
-    max_length=100
-):
-    print(token, end="", flush=True)
+print(result)
 ```
 
-### Token Management
+
+## Advanced Features
+
+### Custom Template Creation
+
+Create custom instruction templates for different models:
 
 ```python
-# Count tokens in text
-result = api.count_tokens("Hello, world!")
-print(f"Token count: {result['count']}")
-print(f"Token IDs: {result['tokens']}")
-
-# Convert text to tokens
-tokens = api.tokenize("Hello, world!")
-
-# Convert tokens back to text
-text = api.detokenize(tokens)
+{
+    "name": ["vicuna-7b", "vicuna-13b"],
+    "system_start": "### System:\n",
+    "system_end": "\n\n",
+    "user_start": "### Human: ",
+    "user_end": "\n\n",
+    "assistant_start": "### Assistant: ",
+    "assistant_end": "\n\n"
+}
 ```
 
-### Generation Control
+### Generation Parameters
 
-```python
-# Start generation
-api.generate(
-    prompt="Write a long story:",
-    max_length=1000
-)
-
-# Check generation status
-status = api.check_generation()
-
-# Abort if needed
-if api.abort_generation():
-    print("Generation aborted successfully")
-```
-
-## Advanced Usage
-
-### Custom Stop Sequences
+Fine-tune generation settings:
 
 ```python
 response = api.generate(
-    prompt="List some colors:",
-    stop_sequences=[".", "\n\n"],
-    max_length=100
+    prompt="Write a story:",
+    max_length=500,
+    temperature=0.8,      # Higher = more creative
+    top_p=0.9,           # Nucleus sampling threshold
+    top_k=40,            # Top-k sampling threshold
+    rep_pen=1.1,         # Repetition penalty
+    rep_pen_range=256,   # How far back to apply rep penalty
+    min_p=0.05          # Minimum probability threshold
 )
 ```
 
-### Logging Probabilities
+### Error Handling
+
+Implement robust error handling:
 
 ```python
-response = api.generate(
-    prompt="Predict the next word:",
-    logprobs=True
-)
-logprobs = api.get_last_logprobs()
+from koboldapi import KoboldAPIError
+
+try:
+    response = api.generate(prompt="Test prompt")
+except KoboldAPIError as e:
+    print(f"API Error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
 ```
 
-### Performance Monitoring
+## Performance Optimization
+
+### Context Management
+
+Optimize token usage:
 
 ```python
-# Get performance stats
-stats = api.get_performance_stats()
-print(f"Generation speed: {stats['tokens_per_second']} tokens/sec")
+# Get max context length
+max_length = api.get_max_context_length()
 
-# Get model info
-model_name = api.get_model()
-max_context = api.get_max_context_length()
+# Count tokens in prompt
+token_count = api.count_tokens(prompt)["count"]
+
+# Ensure we stay within limits
+available_tokens = max_length - token_count
+response_length = min(desired_length, available_tokens)
 ```
 
+### Batch Processing
 
-## Common Issues and Solutions
+Handle multiple inputs efficiently:
+
+```python
+async def process_batch(prompts):
+    results = []
+    for prompt in prompts:
+        async for token in api.stream_generate(prompt):
+            results.append(token)
+    return results
+```
+
+## Troubleshooting
+
+### Common Issues
 
 1. Connection Errors
-   - Verify KoboldCPP is running and port is correct
-   - Check for firewall restrictions
-   - Ensure API password is correctly set if used
+```python
+# Test connection
+if not api.validate_connection():
+    print("Cannot connect to API")
+```
 
-2. Performance Issues
-   - Monitor GPU memory usage
-   - Adjust batch size and context length
-   - Consider using streaming for long generations
+2. Template Errors
+```python
+# Check if template exists
+if not template.get_template():
+    print("No matching template found for model")
+```
 
-3. Template Mismatches
-   - Verify template compatibility with model
-   - Check template format and required fields
-   - Use appropriate system instructions
-
+3. Generation Errors
+```python
+# Monitor generation status
+status = api.check_generation()
+if status is None:
+    print("Generation failed or was interrupted")
+```
 
 ## Contributing
 
 Contributions to improve these tools are welcome. Please submit issues and pull requests on GitHub.
 
-  
+### Development Setup
+
+1. Clone the repository
+2. Install development dependencies:
+```bash
+pip install -e ".[dev]"
+```
+3. Run tests:
+```bash
+pytest tests/
+```
+
+## License
+
+This project is licensed under the GPLv3 license.
