@@ -1,0 +1,9 @@
+{
+  "name": ["Vicuna", "Wizard"],
+  "system_start": "",
+  "system_end": "\n\n",
+  "user_start": "USER: ",
+  "user_end": "\n",
+  "assistant_start": "ASSISTANT: ",
+  "assistant_end": "</s>\n"
+}

@@ -1,0 +1,26 @@
+# Core dependencies
+requests
+aiohttp
+asyncio
+sseclient
+jinja2
+
+# Image and media processing
+pillow
+pillow-heif
+decord
+numpy==1.26.4
+rawpy
+pyexiftool==0.5.6
+
+# Text processing
+nltk==3.8.1
+regex
+extractous
+
+# Database
+tinydb
+
+# Utilities
+typing-extensions
+json_repair

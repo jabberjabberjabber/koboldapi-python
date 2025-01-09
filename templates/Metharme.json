@@ -1,0 +1,9 @@
+{
+  "name": ["Metharme"],
+  "system_start": "<|system|>",
+  "system_end": "",
+  "user_start": "<|user|>",
+  "user_end": "",
+  "assistant_start": "<|model>",
+  "assistant_end": ""
+}
