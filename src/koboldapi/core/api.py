@@ -104,10 +104,10 @@ class KoboldAPI:
         except json.JSONDecodeError:
             raise KoboldAPIError("API returned invalid JSON response")
 
-    def generate(self, prompt: str, max_length: int = 100, temperature: float = 0.7,
-                top_p: float = 0.9, top_k: int = 40, rep_pen: float = 1.1,
+    def generate(self, prompt: str, max_length: int = 300, temperature: float = 0.5,
+                top_p: float = 1, top_k: int = 0, rep_pen: float = 1,
                 rep_pen_range: int = 256, stop_sequences: Optional[List[str]] = None,
-                logprobs: bool = False, images: str = [], min_p: float = 0.02) -> str:
+                logprobs: bool = False, images: str = [], min_p: float = 0.05) -> str:
         """ Generate text from a prompt with specified parameters
         
             Args:
