@@ -6,3 +6,6 @@ sseclient
 jinja2
 regex
 extractous
+pillow
+decord
+numpy
