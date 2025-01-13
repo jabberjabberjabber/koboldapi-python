@@ -9,9 +9,7 @@ description = "Python client and tools for KoboldCPP API"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "GPLv3" }
-authors = [
-    { name = "jabberjabberjabber" }
-]
+authors = [{ name = "jabberjabberjabber" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -38,15 +36,10 @@ dev = [
     "pytest-asyncio",
     "black",
     "isort",
-    "mypy"
-    "tinydb",
-    "json_repair"
+    "mypy",
 	"pillow",
-    "pillow-heif",
     "decord",
     "numpy>=1.26.4",
-    "rawpy",
-    "pyexiftool>=0.5.6",
 ]
 
 [tool.setuptools.packages.find]
