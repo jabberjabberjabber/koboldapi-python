@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "GPLv3" }
 authors = [
-    { name = "Your Name", email = "your.email@example.com" }
+    { name = "jabberjabberjabber" }
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -28,18 +28,8 @@ dependencies = [
     "asyncio",
     "sseclient",
     "jinja2",
-    "pillow",
-    "pillow-heif",
-    "decord",
-    "numpy>=1.26.4",
-    "rawpy",
-    "pyexiftool>=0.5.6",
-    "nltk>=3.8.1",
     "regex",
     "extractous",
-    "tinydb",
-    "typing-extensions",
-    "json_repair"
 ]
 
 [project.optional-dependencies]
@@ -49,6 +39,14 @@ dev = [
     "black",
     "isort",
     "mypy"
+    "tinydb",
+    "json_repair"
+	"pillow",
+    "pillow-heif",
+    "decord",
+    "numpy>=1.26.4",
+    "rawpy",
+    "pyexiftool>=0.5.6",
 ]
 
 [tool.setuptools.packages.find]
@@ -57,8 +55,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 koboldapi = [
     "templates/*.json",
-    "resources/arial.ttf"
 ]
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
