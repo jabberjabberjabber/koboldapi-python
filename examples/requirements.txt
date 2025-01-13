@@ -1,0 +1,18 @@
+# Core dependencies
+requests
+aiohttp
+asyncio
+sseclient
+jinja2
+
+# Image and media processing
+pillow
+decord
+numpy==1.26.4
+
+# Text processing
+regex
+extractous
+
+# Utilities
+typing-extensions

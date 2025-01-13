@@ -34,10 +34,11 @@ def process_image(core: KoboldAPICore, image_path: Path,
         result = core.api_client.generate(
             prompt=prompt,
             images=[encoded],
-            temperature=0,
+            temperature=0.1,
             top_p=1,
             top_k=0,
             rep_pen=1.05,
+            #min_p=1.05,
             max_length=max_context // 2
         )
         return result, image_path.with_suffix('.txt')
