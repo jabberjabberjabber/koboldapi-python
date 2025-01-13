@@ -96,7 +96,7 @@ class InstructTemplate:
             and the jinja2 templates and returned on a list.
         """
         templates = self.get_template()
-        user_text = f"{content}\n\nINSTRUCTION: {instruction}"
+        user_text = f"{content}\n\n{instruction}"
         prompt_parts = []
         wrapped = []
         if adapter := templates["adapter"]:
