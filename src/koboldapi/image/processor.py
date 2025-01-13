@@ -117,7 +117,7 @@ class ImageProcessor:
             prompt = self.core.template_wrapper.wrap_prompt(
                 instruction=instruction,
                 system_instruction=system_instruction
-            )[0]
+            )
             
             result = self.core.api_client.generate(
                 prompt=prompt,

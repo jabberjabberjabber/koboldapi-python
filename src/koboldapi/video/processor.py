@@ -1,5 +1,3 @@
-"""Process videos through KoboldCPP API."""
-
 import base64
 import io
 import json
@@ -148,11 +146,11 @@ class VideoProcessor:
                 Analysis text
         """
         instruction = (
-            f"These are frames {' half ' if self.resize_mode == 'qwen' else ' '}"
-            f"second apart from a video. "
+            f"These are a group of frames from a video. Each pair of frames "
+            f"is one second of video. "
             f"The total length of the video is {total_length:.1f}s. "
-            f"Out of {batch_size} groups evenly divided in linear time, "
-            f"this frame group is number {batch_idx}. "
+            f"Out of {batch_size} groups of pairs evenly divided in linear time, "
+            f"this group is number {batch_idx}. "
             "Describe the action occurring over this time period. "
             "Pay close attention to characters, style, movement and scene. "
             "Make assumptions as needed using knowledge of common video "
@@ -167,12 +165,12 @@ class VideoProcessor:
             instruction,
             "",
             frame_system
-        )[0]
+        )
         
         return self.core.api_client.generate(
             prompt=frame_prompt,
             images=frame_batch,
-            max_length=500,
+            max_length=200,
             min_p=0,
             rep_pen=1,
             temperature=0.1,
@@ -200,3 +198,98 @@ class VideoProcessor:
         final_instruction = (
             "Recall the events in a linear sequence to create a description "
             "of the entire video. Use as much of the individual descriptions "
+            "as possible while maintaining a coherent narrative and removing "
+            "redundancies."
+        )
+        
+        final_system = (
+            "You are a helpful assistant."
+        )
+        
+        final_prompt = self.core.template_wrapper.wrap_prompt(
+            final_instruction,
+            all_analyses,
+            final_system
+        )
+        
+        prompt_tokens = self.core.api_client.count_tokens(final_prompt)["count"]
+        
+        if max_context > prompt_tokens + 500:
+            max_generation = (max_context - prompt_tokens)
+            return self.core.api_client.generate(
+                prompt=final_prompt,
+                max_length=max_generation,
+                min_p=0,
+                rep_pen=1,
+                temperature=0.1,
+                top_k=0,
+                top_p=1
+            )
+        return None
+        
+    def analyze_video(self, video_path: Union[str, Path], max_frames: int = 64,
+                     output_dir: Optional[str] = None,
+                     batch_size: int = 8) -> Dict:
+        """ Analyze entire video with frame batching.
+        
+            Args:
+                video_path: Path to video file
+                max_frames: Maximum frames to analyze
+                output_dir: Optional directory to save results
+                batch_size: Frames per batch
+                
+            Returns:
+                Dictionary containing analyses and final summary
+        """
+        video_path = Path(video_path)
+        out_path = (Path(output_dir) if output_dir 
+                   else video_path.parent / f"{video_path.stem}_analysis")
+        out_path.mkdir(exist_ok=True)
+        
+        results = {
+            "analysis": [],
+            "final_summary": None,
+            "metadata": {
+                "video_path": str(video_path.absolute()),
+                "max_frames": max_frames,
+                "batch_size": batch_size,
+                "resize_mode": self.resize_mode,
+                "max_pixels": self.max_pixels,
+                "min_pixels": self.min_pixels
+            }
+        }
+        
+        frames, total_length = self.process_video(video_path, max_frames)
+        frame_batches = [
+            frames[i:i + batch_size] 
+            for i in range(0, len(frames), batch_size)
+        ]
+        
+        results["metadata"]["frame_count"] = len(frames)
+        total_batches = len(frame_batches)
+        
+        for batch_idx, frame_batch in enumerate(frame_batches):
+            print(f"Processing batch {batch_idx + 1}/{total_batches}...")
+            batch_analysis = self.analyze_batch(
+                frame_batch,
+                batch_idx,
+                batch_size,
+                total_length
+            )
+            results["analysis"].append({
+                "batch": batch_idx + 1,
+                "analysis": batch_analysis
+            })
+            
+        if frame_batches:
+            final_summary = self.generate_summary(
+                results["analysis"],
+                total_length
+            )
+            results["final_summary"] = final_summary
+            
+        results_file = out_path / "analysis.json"
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=2)
+            
+        return results

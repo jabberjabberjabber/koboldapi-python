@@ -46,7 +46,7 @@ def translate_document(file_path: str, target_language: str = "French"):
                 "You are a skilled translator. Maintain the original "
                 "style and tone while producing natural translations."
             )
-        )[0]
+        )
         
         translation = core.api_client.generate(
             prompt=prompt,
@@ -94,7 +94,7 @@ def summarize_article(file_path: str, style: str = "academic"):
         instruction=config["instruction"],
         content=content,
         system_instruction=config["system"]
-    )[0]
+    )
     
     summary = core.api_client.generate(
         prompt=prompt,
@@ -176,7 +176,7 @@ def batch_image_comparison(directory: str):
             for i, r in enumerate(results.values())
             if isinstance(r, dict) and r.get('result')
         )
-    )[0]
+    )
     
     comparison = core.api_client.generate(prompt=prompt, max_length=2000)
     
@@ -211,7 +211,7 @@ def character_analysis(video_path: str):
         content="\n\n".join(
             analysis["analysis"] for analysis in results["analysis"]
         )
-    )[0]
+    )
     
     character_study = core.api_client.generate(
         prompt=prompt,
@@ -249,7 +249,7 @@ def scene_detection(video_path: str):
         content="\n\n".join(
             analysis["analysis"] for analysis in results["analysis"]
         )
-    )[0]
+    )
     
     scene_analysis = core.api_client.generate(
         prompt=prompt,
@@ -265,8 +265,8 @@ def scene_detection(video_path: str):
 
 
 if __name__ == "__main__":
-    translate_document("article.txt", "Spanish")
-    summarize_article("paper.txt", "academic")
+    translate_document("article.pdf", "Spanish")
+    summarize_article("article.txt", "academic")
     analyze_artwork("painting.jpg")
     batch_image_comparison("image_directory")
     character_analysis("movie.mp4")

@@ -76,7 +76,7 @@ def process_text(core: KoboldAPICore,
             async def stream():
                 nonlocal generated_text
                 async for token in core.api_client.stream_generate(
-                    prompt=wrapped[0],
+                    prompt=wrapped,
                     max_length=max_context // 2,
                     **core.get_generation_params()
                 ):

@@ -206,7 +206,7 @@ def analyze_frame_batch(client, wrapper, frame_batch, batch_idx, batch_size, tot
     """
     frame_instruction = f"These are frames a half second apart from a video. The time between the first and last frame is four seconds. The total length of the video is {total_length}s. Out of {batch_size} groups evenly divided in linear time, this frame group is number {batch_idx}. Describe the the action occuring over this time period. Pay close attention to characters, style, movement and scene. Make assumptions as needed using knowledge of common video content, themes, and tropes."
     frame_system = "You are Qwen, a helpful assistant made by Alibaba with video processing capability."
-    frame_prompt = wrapper.wrap_prompt(frame_instruction, "", frame_system)[0]
+    frame_prompt = wrapper.wrap_prompt(frame_instruction, "", frame_system)
     return client.generate(
         prompt=frame_prompt,
         images=frame_batch,
@@ -235,7 +235,7 @@ def generate_final_summary(client, wrapper, results, total_length):
         final_instruction,
         final_content,
         final_system
-    )[0]
+    )
     prompt_tokens = client.count_tokens(final_prompt)["count"]
     if max_context > prompt_tokens + 500:
         max_generation = (max_context - prompt_tokens)

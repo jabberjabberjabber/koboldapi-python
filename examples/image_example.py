@@ -29,7 +29,7 @@ def process_image(core: KoboldAPICore, image_path: Path,
         prompt = core.template_wrapper.wrap_prompt(
             instruction=instruction,
             system_instruction="You are a helpful assistant."
-        )[0]
+        )
         
         result = core.api_client.generate(
             prompt=prompt,

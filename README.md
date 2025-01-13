@@ -145,7 +145,7 @@ for chunk, _ in chunks:
         prompt=core.template_wrapper.wrap_prompt(
             instruction="Summarize this text",
             content=chunk
-        )[0],
+        ),
         max_length=200
     )
     print(summary)
@@ -175,7 +175,7 @@ result = core.api_client.generate(
     prompt=core.template_wrapper.wrap_prompt(
         instruction="Extract text from this image",
         system_instruction="You are an OCR system"
-    )[0],
+    ),
     images=[image_data],
     temperature=0.1
 )
