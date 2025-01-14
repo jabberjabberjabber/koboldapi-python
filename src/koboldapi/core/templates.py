@@ -198,41 +198,41 @@ class InstructTemplate:
         """ Normalize string for comparison. """
         return re.sub(r"[^a-z0-9]", "", s.lower())
         
-def _get_adapter_template(self) -> Optional[Dict]:
-    """ Get template from file or defaults.
-    
-        First checks custom templates directory if provided,
-        then falls back to built-in defaults.
+    def _get_adapter_template(self) -> Optional[Dict]:
+        """ Get template from file or defaults.
         
-        Returns:
-            Template dictionary or None if no match found
-    """
-    model_name_normalized = self._normalize(self.model)
-    templates = {}
-    
-    # Check custom templates if directory provided
-    if self.templates_dir and self.templates_dir.exists():
-        try:
-            for file in self.templates_dir.glob('*.json'):
-                with open(file) as f:
-                    template = json.load(f)
-                    # Update dict instead of extend
-                    templates.update(template)
-                required_fields = [
-                    "name",
-                    "system_start", "system_end", 
-                    "user_start", "user_end",
-                    "assistant_start", "assistant_end"
-                ]
-                if not all(field in template for field in required_fields):
-                    print(f"Template {file} missing required fields, skipping")
-                    continue
-        except Exception as e:
-            print(f"Error reading template files: {str(e)}")
-    else:
-        templates = DEFAULT_TEMPLATES
+            First checks custom templates directory if provided,
+            then falls back to built-in defaults.
+            
+            Returns:
+                Template dictionary or None if no match found
+        """
+        model_name_normalized = self._normalize(self.model)
+        templates = {}
+        
+        # Check custom templates if directory provided
+        if self.templates_dir and self.templates_dir.exists():
+            try:
+                for file in self.templates_dir.glob('*.json'):
+                    with open(file) as f:
+                        template = json.load(f)
+                        # Update dict instead of extend
+                        templates.update(template)
+                    required_fields = [
+                        "name",
+                        "system_start", "system_end", 
+                        "user_start", "user_end",
+                        "assistant_start", "assistant_end"
+                    ]
+                    if not all(field in template for field in required_fields):
+                        print(f"Template {file} missing required fields, skipping")
+                        continue
+            except Exception as e:
+                print(f"Error reading template files: {str(e)}")
+        else:
+            templates = DEFAULT_TEMPLATES
 
-    return self._template_from_name(model_name_normalized, templates)
+        return self._template_from_name(model_name_normalized, templates)
 
     def _template_from_name(self, model_normalized_name, templates):
         best_match = None
