@@ -30,6 +30,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|im_start|>assistant\n",
       "assistant_end": "<|im_end|>\n"
     },
+    {
       "name": ["Command-r", "aya", "cmdr", "c4ai"],
       "system_start": "<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>",
       "system_end": "<|END_OF_TURN_TOKEN|>",
