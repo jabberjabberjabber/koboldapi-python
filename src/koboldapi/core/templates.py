@@ -234,7 +234,7 @@ class InstructTemplate:
 
         return self._template_from_name(model_name_normalized, templates)
 
-    def _template_from_name(self, model_normalized_name, templates):
+    def _template_from_name(self, model_name_normalized, templates):
         best_match = None
         best_match_length = 0
         best_match_version = 0
