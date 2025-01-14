@@ -8,7 +8,7 @@ from typing import Optional, Dict, List, Union
 import requests
 
 from .api import KoboldAPI
-from .default_templates import find_template
+
 
 DEFAULT_TEMPLATES: Dict[str, Dict] = {
     {
@@ -127,6 +127,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
         "user_end": "\n",
         "assistant_start": "Assistant: ",
         "assistant_end": "<|end_of_turn|>"
+    },
     "vicuna": {
         "name": ["vicuna"],
         "system_start": "SYSTEM: ",
