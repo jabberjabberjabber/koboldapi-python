@@ -11,6 +11,7 @@ from .api import KoboldAPI
 
 
 DEFAULT_TEMPLATES: Dict[str, Dict] = {
+    "alpaca":
     {
       "name": ["Alpaca"],
       "system_start": "",
@@ -20,6 +21,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "### Response:\n",
       "assistant_end": "</s>\n\n"
     },
+    "chatml":
     {
       "name": ["ChatML", "obsidian", "Nous", "Hermes", "qwen", "MiniCPM-V-2.6", "QvQ", "QwQ"], 
       "system_start": "<|im_start|>system\n",
@@ -30,6 +32,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|im_start|>assistant\n",
       "assistant_end": "<|im_end|>\n"
     },
+    "cmdr":
     {
       "name": ["Command-r", "aya", "cmdr", "c4ai"],
       "system_start": "<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>",
@@ -39,6 +42,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>",
       "assistant_end": "<|END_OF_TURN_TOKEN|>"
     },
+    "gemma":
     {
       "name": ["gemma-2", "gemma"],
       "system_start": "<start_of_turn>system\n",
@@ -48,6 +52,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<start_of_turn>model\n",
       "assistant_end": "<end_of_turn>\n"
     },
+    "llama2":
     {
       "name": ["Llama-2"],
       "system_start": "",
@@ -57,6 +62,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": " [/INST] ",
       "assistant_end": " </s>\n"
     },
+    "llama3":
     {
       "name": ["Llama-3", "MiniCPM-V-2.5"],
       "system_start": "<|start_header_id|>system<|end_header_id|>\n\n",
@@ -66,6 +72,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|start_header_id|>assistant<|end_header_id|>\n\n",
       "assistant_end": "<|eot_id|>"
     },
+    "metharme":
     {
       "name": ["Metharme"],
       "system_start": "<|system|>",
@@ -75,6 +82,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|model>",
       "assistant_end": ""
     },
+    "mistral":
     {
       "name": ["Mistral", "Miqu", "Mixtral"], 
       "system_start": "",
@@ -84,6 +92,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": " [/INST]",
       "assistant_end": "</s>"
     },
+    "large":
     {
       "name": ["Mistral Large", "Mistral Small", "Mistral 2409"], 
       "system_start": "",
@@ -93,6 +102,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "[/INST]",
       "assistant_end": "</s>"
     },
+    "nemo":
     {
       "name": ["Mistral Nemo"],
       "system_start": "",
@@ -102,6 +112,7 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "[/INST]",
       "assistant_end": "</s>"
     },
+    "phi":
     {
       "name": ["Phi"],
       "system_start": "<|system|>\n",
@@ -111,16 +122,8 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
       "assistant_start": "<|assistant|>\n",
       "assistant_end": "<|end|>\n"
     },
+    "openchat":
     {
-      "name": ["Vicuna", "Wizard"],
-      "system_start": "",
-      "system_end": "\n\n",
-      "user_start": "USER: ",
-      "user_end": "\n",
-      "assistant_start": "ASSISTANT: ",
-      "assistant_end": "</s>\n"
-    },
-    "openchat": {
         "name": ["openchat"],
         "system_start": "GPT4 Correct User: ",
         "system_end": "\n",
@@ -129,8 +132,9 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
         "assistant_start": "Assistant: ",
         "assistant_end": "<|end_of_turn|>"
     },
-    "vicuna": {
-        "name": ["vicuna"],
+    "vicuna":
+    {
+        "name": ["vicuna", "wizard"],
         "system_start": "SYSTEM: ",
         "system_end": "\n\n",
         "user_start": "USER: ",
@@ -138,7 +142,8 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
         "assistant_start": "ASSISTANT: ",
         "assistant_end": "\n"
     },
-    "yi": {
+    "yi":
+    {
         "name": ["yi"],
         "system_start": "<|im_start|>system\n",
         "system_end": "<|im_end|>\n",
@@ -147,7 +152,8 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
         "assistant_start": "<|im_start|>assistant\n",
         "assistant_end": "<|im_end|>\n"
     },
-    "neural-chat": {
+    "neural":
+    {
         "name": ["neural-chat", "neural chat"],
         "system_start": "### System:\n",
         "system_end": "\n\n",
@@ -156,7 +162,8 @@ DEFAULT_TEMPLATES: Dict[str, Dict] = {
         "assistant_start": "### Assistant:\n",
         "assistant_end": "\n\n"
     },
-    "default": {
+    "default":
+    {
         "name": ["default"],
         "system_start": "System: ",
         "system_end": "\n\n",
@@ -191,60 +198,62 @@ class InstructTemplate:
         """ Normalize string for comparison. """
         return re.sub(r"[^a-z0-9]", "", s.lower())
         
-    def _get_adapter_template(self) -> Optional[Dict]:
-        """ Get template from file or defaults.
+def _get_adapter_template(self) -> Optional[Dict]:
+    """ Get template from file or defaults.
+    
+        First checks custom templates directory if provided,
+        then falls back to built-in defaults.
         
-            First checks custom templates directory if provided,
-            then falls back to built-in defaults.
-            
-            Returns:
-                Template dictionary or None if no match found
-        """
-        model_name_normalized = self._normalize(self.model)
+        Returns:
+            Template dictionary or None if no match found
+    """
+    model_name_normalized = self._normalize(self.model)
+    templates = {}
+    
+    # Check custom templates if directory provided
+    if self.templates_dir and self.templates_dir.exists():
+        try:
+            for file in self.templates_dir.glob('*.json'):
+                with open(file) as f:
+                    template = json.load(f)
+                    # Update dict instead of extend
+                    templates.update(template)
+                required_fields = [
+                    "name",
+                    "system_start", "system_end", 
+                    "user_start", "user_end",
+                    "assistant_start", "assistant_end"
+                ]
+                if not all(field in template for field in required_fields):
+                    print(f"Template {file} missing required fields, skipping")
+                    continue
+        except Exception as e:
+            print(f"Error reading template files: {str(e)}")
+    else:
+        templates = DEFAULT_TEMPLATES
+
+    return self._template_from_name(model_name_normalized, templates)
+
+    def _template_from_name(self, model_normalized_name, templates):
         best_match = None
         best_match_length = 0
         best_match_version = 0
-        
-        # Check custom templates if directory provided
-        if self.templates_dir and self.templates_dir.exists():
-            try:
-                for file in self.templates_dir.glob('*.json'):
-                    with open(file) as f:
-                        template = json.load(f)
-                    required_fields = [
-                        "name",
-                        "system_start", "system_end",
-                        "user_start", "user_end",
-                        "assistant_start", "assistant_end"
-                    ]
-                    if not all(field in template for field in required_fields):
-                        print(f"Template {file} missing required fields, skipping")
-                        continue
-            except Exception as e:
-                print(f"Error reading template files: {str(e)}")
-
-                    
-        else:
-            template = DEFAULT_TEMPLATES
-            
-        for name in template["name"]:
-            normalized_name = self._normalize(name)
-            if normalized_name in model_name_normalized:
-                version_match = re.search(r'(\d+)(?:\.(\d+))?', name)
-                current_version = float(f"{version_match.group(1)}.{version_match.group(2) or '0'}") if version_match else 0
-                name_length = len(normalized_name)
-                if current_version > best_match_version or \
-                   (current_version == best_match_version and 
-                    name_length > best_match_length):
-                    best_match = template
-                    best_match_length = name_length
-                    best_match_version = current_version
-
-        # If no custom template found, use built-in defaults
+        for template in templates:
+            for name in template["name"]:
+                normalized_name = self._normalize(name)
+                if normalized_name in model_name_normalized:
+                    version_match = re.search(r'(\d+)(?:\.(\d+))?', name)
+                    current_version = float(f"{version_match.group(1)}.{version_match.group(2) or '0'}") if version_match else 0
+                    name_length = len(normalized_name)
+                    if current_version > best_match_version or \
+                       (current_version == best_match_version and 
+                        name_length > best_match_length):
+                        best_match = template
+                        best_match_length = name_length
+                        best_match_version = current_version
         if not best_match:
-            best_match = DEFAULT_TEMPLATES.get("default")
-            
-        return best_match
+            return DEFAULT_TEMPLATES.get("default")
+        return best_match 
         
     def _get_props(self) -> Optional[Dict]:
         """ Get template from props endpoint. """
@@ -269,18 +278,10 @@ class InstructTemplate:
         }
         return templates
         
+
     def wrap_prompt(self, instruction: str, content: str = "",
-                   system_instruction: str = "") -> List[str]:
-        """ Format a prompt using templates.
-        
-            Args:
-                instruction: Main instruction for the model
-                content: Optional content to process
-                system_instruction: Optional system-level instruction
-                
-            Returns:
-                List of wrapped prompts (adapter and jinja versions)
-        """
+                   system_instruction: str = "") -> str:
+        """ Format a prompt using templates. """
         user_text = f"{content}\n\n{instruction}" if content else instruction
         prompt_parts = []
         wrapped = []
@@ -299,7 +300,8 @@ class InstructTemplate:
                 adapter["assistant_start"]
             ])
             wrapped.append("".join(prompt_parts))
-        if "default" in adapter.get("name"):    
+            
+        if wrapped and "default" in adapter["name"]:
             if jinja_template := self.get_template()["jinja"]:
                 jinja_compiled_template = self.jinja_env.from_string(jinja_template)
                 messages = []
@@ -312,12 +314,14 @@ class InstructTemplate:
                     {'role': 'user', 'content': user_text},
                     {'role': 'assistant', 'content': ''}
                 ])
-                wrapped.append(jinja_compiled_template.render(
+                jinja_result = jinja_compiled_template.render(
                     messages=messages,
                     add_generation_prompt=True,
                     bos_token="",
                     eos_token=""
-                ))
-                if wrapped[1]:
+                )
+                if jinja_result:
+                    wrapped.append(jinja_result)
                     return wrapped[1]
+                    
         return wrapped[0]
