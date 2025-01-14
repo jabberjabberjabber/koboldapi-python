@@ -238,7 +238,7 @@ class InstructTemplate:
         best_match = None
         best_match_length = 0
         best_match_version = 0
-        for template in templates:
+        for template in templates.values():
             for name in template["name"]:
                 normalized_name = self._normalize(name)
                 if normalized_name in model_name_normalized:
