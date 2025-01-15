@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "koboldapi"
-version = "0.1.0"
-description = "Python client and tools for KoboldCPP API"
+version = "0.2.0"
+description = "Python tools for the KoboldCPP API"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "GPLv3" }
@@ -28,6 +28,9 @@ dependencies = [
     "jinja2",
     "regex",
     "extractous",
+	"numpy",
+	"decord",
+	"pillow",
 ]
 
 [project.optional-dependencies]
@@ -37,18 +40,10 @@ dev = [
     "black",
     "isort",
     "mypy",
-	"pillow",
-    "decord",
-    "numpy>=1.26.4",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-koboldapi = [
-    "templates/*.json",
-]
 
 [tool.setuptools]
 include-package-data = false

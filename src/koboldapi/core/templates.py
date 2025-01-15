@@ -8,172 +8,8 @@ from typing import Optional, Dict, List, Union
 import requests
 
 from .api import KoboldAPI
+from .default_templates import default_templates
 
-
-DEFAULT_TEMPLATES: Dict[str, Dict] = {
-    "alpaca":
-    {
-      "name": ["Alpaca"],
-      "system_start": "",
-      "system_end": "\n\n",
-      "user_start": "### Instruction:\n",
-      "user_end": "\n\n",
-      "assistant_start": "### Response:\n",
-      "assistant_end": "</s>\n\n"
-    },
-    "chatml":
-    {
-      "name": ["ChatML", "obsidian", "Nous", "Hermes", "qwen", "MiniCPM-V-2.6", "QvQ", "QwQ"], 
-      "system_start": "<|im_start|>system\n",
-      "system_instruction": "You are a helpful assistant.",
-      "system_end": "<|im_end|>\n",
-      "user_start": "<|im_start|>user\n",
-      "user_end": "<|im_end|>\n",
-      "assistant_start": "<|im_start|>assistant\n",
-      "assistant_end": "<|im_end|>\n"
-    },
-    "cmdr":
-    {
-      "name": ["Command-r", "aya", "cmdr", "c4ai"],
-      "system_start": "<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>",
-      "system_end": "<|END_OF_TURN_TOKEN|>",
-      "user_start": "<|START_OF_TURN_TOKEN|><|USER_TOKEN|>",
-      "user_end": "<|END_OF_TURN_TOKEN|>",
-      "assistant_start": "<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>",
-      "assistant_end": "<|END_OF_TURN_TOKEN|>"
-    },
-    "gemma":
-    {
-      "name": ["gemma-2", "gemma"],
-      "system_start": "<start_of_turn>system\n",
-      "system_end": "<end_of_turn>\n",
-      "user_start": "<start_of_turn>user\n",
-      "user_end": "<end_of_turn>\n",
-      "assistant_start": "<start_of_turn>model\n",
-      "assistant_end": "<end_of_turn>\n"
-    },
-    "llama2":
-    {
-      "name": ["Llama-2"],
-      "system_start": "",
-      "system_end": "",
-      "user_start": "<s>[INST] ",
-      "user_end": "",
-      "assistant_start": " [/INST] ",
-      "assistant_end": " </s>\n"
-    },
-    "llama3":
-    {
-      "name": ["Llama-3", "MiniCPM-V-2.5"],
-      "system_start": "<|start_header_id|>system<|end_header_id|>\n\n",
-      "system_end": "<|eot_id|>",
-      "user_start": "<|start_header_id|>user<|end_header_id|>\n\n",
-      "user_end": "<|eot_id|>",
-      "assistant_start": "<|start_header_id|>assistant<|end_header_id|>\n\n",
-      "assistant_end": "<|eot_id|>"
-    },
-    "metharme":
-    {
-      "name": ["Metharme"],
-      "system_start": "<|system|>",
-      "system_end": "",
-      "user_start": "<|user|>",
-      "user_end": "",
-      "assistant_start": "<|model>",
-      "assistant_end": ""
-    },
-    "mistral":
-    {
-      "name": ["Mistral", "Miqu", "Mixtral"], 
-      "system_start": "",
-      "system_end": "",
-      "user_start": " [INST] ",
-      "user_end": "",
-      "assistant_start": " [/INST]",
-      "assistant_end": "</s>"
-    },
-    "large":
-    {
-      "name": ["Mistral Large", "Mistral Small", "Mistral 2409"], 
-      "system_start": "",
-      "system_end": "",
-      "user_start": "[INST] ",
-      "user_end": "",
-      "assistant_start": "[/INST]",
-      "assistant_end": "</s>"
-    },
-    "nemo":
-    {
-      "name": ["Mistral Nemo"],
-      "system_start": "",
-      "system_end": "",
-      "user_start": "[INST]",
-      "user_end": "",
-      "assistant_start": "[/INST]",
-      "assistant_end": "</s>"
-    },
-    "phi":
-    {
-      "name": ["Phi"],
-      "system_start": "<|system|>\n",
-      "system_end": "<|end|>\n",
-      "user_start": "<|user|>\n",
-      "user_end": "<|end|>\n",
-      "assistant_start": "<|assistant|>\n",
-      "assistant_end": "<|end|>\n"
-    },
-    "openchat":
-    {
-        "name": ["openchat"],
-        "system_start": "GPT4 Correct User: ",
-        "system_end": "\n",
-        "user_start": "Human: ",
-        "user_end": "\n",
-        "assistant_start": "Assistant: ",
-        "assistant_end": "<|end_of_turn|>"
-    },
-    "vicuna":
-    {
-        "name": ["vicuna", "wizard"],
-        "system_start": "SYSTEM: ",
-        "system_end": "\n\n",
-        "user_start": "USER: ",
-        "user_end": "\n",
-        "assistant_start": "ASSISTANT: ",
-        "assistant_end": "\n"
-    },
-    "yi":
-    {
-        "name": ["yi"],
-        "system_start": "<|im_start|>system\n",
-        "system_end": "<|im_end|>\n",
-        "user_start": "<|im_start|>user\n",
-        "user_end": "<|im_end|>\n",
-        "assistant_start": "<|im_start|>assistant\n",
-        "assistant_end": "<|im_end|>\n"
-    },
-    "neural":
-    {
-        "name": ["neural-chat", "neural chat"],
-        "system_start": "### System:\n",
-        "system_end": "\n\n",
-        "user_start": "### User:\n",
-        "user_end": "\n\n",
-        "assistant_start": "### Assistant:\n",
-        "assistant_end": "\n\n"
-    },
-    "default":
-    {
-        "name": ["default"],
-        "system_start": "System: ",
-        "system_end": "\n\n",
-        "user_start": "User: ",
-        "user_end": "\n",
-        "assistant_start": "Assistant: ",
-        "assistant_end": "\n"
-    }
-}
-    
 class InstructTemplate:
     """ Wraps instructions and content with appropriate templates. """
     
@@ -220,9 +56,8 @@ class InstructTemplate:
                         templates.update(template)
                     required_fields = [
                         "name",
-                        "system_start", "system_end", 
                         "user_start", "user_end",
-                        "assistant_start", "assistant_end"
+                        "assistant_start"
                     ]
                     if not all(field in template for field in required_fields):
                         print(f"Template {file} missing required fields, skipping")
@@ -230,7 +65,7 @@ class InstructTemplate:
             except Exception as e:
                 print(f"Error reading template files: {str(e)}")
         else:
-            templates = DEFAULT_TEMPLATES
+            templates = default_templates
 
         return self._template_from_name(model_name_normalized, templates)
 
@@ -252,7 +87,7 @@ class InstructTemplate:
                         best_match_length = name_length
                         best_match_version = current_version
         if not best_match:
-            return DEFAULT_TEMPLATES.get("default")
+            return default_templates.get("default")
         return best_match 
         
     def _get_props(self) -> Optional[Dict]:

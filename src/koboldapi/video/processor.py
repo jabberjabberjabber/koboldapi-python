@@ -132,8 +132,9 @@ class VideoProcessor:
         
         return base64_frames, video_length
 
-    def analyze_batch(self, frame_batch: List[str], batch_idx: int,
-                     batch_size: int, total_length: float) -> str:
+    def analyze_batch(self, instruction: str, system_instruction: str,
+                    frame_batch: List[str], batch_idx: int,
+                    batch_size: int, total_length: float) -> str:
         """ Analyze a batch of frames.
         
             Args:
@@ -145,24 +146,25 @@ class VideoProcessor:
             Returns:
                 Analysis text
         """
-        instruction = (
+        
+        base_instruction = (
             f"These are a group of frames from a video. Each pair of frames "
             f"is one second of video. "
             f"The total length of the video is {total_length:.1f}s. "
             f"Out of {batch_size} groups of pairs evenly divided in linear time, "
             f"this group is number {batch_idx}. "
             "Describe the action occurring over this time period. "
-            "Pay close attention to characters, style, movement and scene. "
-            "Make assumptions as needed using knowledge of common video "
-            "content, themes, and tropes."
+            f"{instruction} "
         )
-        
-        frame_system = (
-            "You are a helpful assistant analyzing video content."
-        )
+        if system_instruction:
+            frame_system = system_instruction
+        else:
+            frame_system = (
+                "You are a helpful assistant analyzing video content."
+            )
         
         frame_prompt = self.core.template_wrapper.wrap_prompt(
-            instruction,
+            base_instruction,
             "",
             frame_system
         )
@@ -178,7 +180,7 @@ class VideoProcessor:
             top_p=1
         )
 
-    def generate_summary(self, batch_analyses: List[Dict],
+    def generate_summary(self, instruction: str, batch_analyses: List[Dict],
                         total_length: float) -> Optional[str]:
         """ Generate final summary from batch analyses.
         
@@ -197,9 +199,10 @@ class VideoProcessor:
         
         final_instruction = (
             "Recall the events in a linear sequence to create a description "
-            "of the entire video. Use as much of the individual descriptions "
-            "as possible while maintaining a coherent narrative and removing "
-            "redundancies."
+            "of the entire video. Summarize what was described in the batches. "
+            "Remove redundancies when possible. "
+            "Only report on changes between frames or batches."
+            f"{instruction}" 
         )
         
         final_system = (
@@ -229,7 +232,9 @@ class VideoProcessor:
         
     def analyze_video(self, video_path: Union[str, Path], max_frames: int = 64,
                      output_dir: Optional[str] = None,
-                     batch_size: int = 8) -> Dict:
+                     batch_size: int = 8, 
+                     instruction: str = "", 
+                     system_instruction: str = None) -> Dict:
         """ Analyze entire video with frame batching.
         
             Args:
@@ -271,6 +276,8 @@ class VideoProcessor:
         for batch_idx, frame_batch in enumerate(frame_batches):
             print(f"Processing batch {batch_idx + 1}/{total_batches}...")
             batch_analysis = self.analyze_batch(
+                instruction,
+                system_instruction,
                 frame_batch,
                 batch_idx,
                 batch_size,
@@ -283,6 +290,7 @@ class VideoProcessor:
             
         if frame_batches:
             final_summary = self.generate_summary(
+                instruction,
                 results["analysis"],
                 total_length
             )

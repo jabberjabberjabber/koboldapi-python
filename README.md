@@ -1,311 +1,469 @@
-# Basic functions
+# KoboldCPP Integration Library
 
-## KoboldCpp API Interface
+A Python library for interacting with KoboldCPP's API, allowing anyone to create basic scripts to utilize powerful LLMs locally for tasks using documents, images, and videos.
 
-Allows easy use of basic KoboldCpp API endpoints, including streaming generations, images, samplers.
+## Features
 
-## Instruct Template Wrapping
+- Text processing with chunking
+- Image and video processing
+- Configurable API settings and generation parameters
+- Wraps prompts with appropriate instruction templates for most models
+- Support for custom instruction templates
 
-Finds the appropriate instruct template for the running model and wraps it around content to create a prompt.
- 
-## Chunking
+## Installation
 
-Will read most types of document and chunk them any size up to max context. Stops at natural break points. Returns the chunks as a list.
+```bash
+pip install koboldapi
+```
 
-# Guide to Using the KoboldCPP API with Python
+or
 
-## Introduction
-
-KoboldCPP is a powerful and portable solution for running Large Language Models (LLMs). Its standout features include:
-
-- Zero-installation deployment with single executable
-- Support for any GGUF model compatible with LlamaCPP
-- Cross-platform support (Linux, Windows, macOS)
-- Hardware acceleration via CUDA and Vulkan
-- Built-in GUI with extensive features
-- Multimodal capabilities (image generation, speech, etc.)
-- API compatibility with OpenAI and Ollama
+```bash
+git clone https://github.com/jabberjabberjabber/koboldapi-python/
+pip install -e .
+```
 
 ## Quick Start
 
-### Basic Setup
-
-1. Download the KoboldCPP executable for your platform
-2. Place your GGUF model file in the same directory
-3. Install the Python client:
-
-```bash
-git clone https://github.com/jabberjabberjabber/koboldapi-python
-cd koboldapi-python
-pip install git+https://github.com/jabberjabberjabber/koboldapi-python.git
-```
-
-### First Steps
-
-Here's a minimal example to get started:
+### Basic Text Generation
 
 ```python
-from koboldapi import KoboldAPI
+from koboldapi import KoboldAPICore, KoboldAPIConfig
 
-# Initialize the client
-api = KoboldAPI("http://localhost:5001")
+# Initialize with configuration
+config = KoboldAPIConfig(
+    api_url="http://localhost:5001",
+    api_password="your_password",
+    templates_directory="./templates"
+)
 
-# Basic text generation
-response = api.generate(
-    prompt="Write a haiku about programming:",
-    max_length=50,
+# Create core instance
+core = KoboldAPICore(config.__dict__)
+
+# Generate text
+response = core.api_client.generate(
+    prompt="Tell me a story about a robot",
+    max_length=300,
     temperature=0.7
 )
 print(response)
 ```
 
-## Core Concepts
-
-### Configuration Management
-
-The `KoboldAPIConfig` class manages configuration settings for the API client. You can either create a config programmatically or load it from a JSON file:
+### Image Analysis
 
 ```python
-from koboldapi import KoboldAPIConfig
+from koboldapi import ImageProcessor
 
-# Create config programmatically
-config = KoboldAPIConfig(
-    api_url="http://localhost:5001",
-    api_password="",
-    templates_directory="./templates",
-    translation_language="English",
-    temp=0.7,
-    top_k=40,
-    top_p=0.9,
-    rep_pen=1.1
-)
+# Initialize image processor
+image_processor = ImageProcessor(core)
 
-# Or load from JSON file
-config = KoboldAPIConfig.from_json("config.json")
-
-# Save config to file
-config.to_json("new_config.json")
-```
-
-Example config.json:
-```json
-{
-    "api_url": "http://localhost:5001",
-    "api_password": "",
-    "templates_directory": "./templates",
-    "translation_language": "English",
-    "temp": 0.7,
-    "top_k": 40,
-    "top_p": 0.9,
-    "rep_pen": 1.1
-}
-```
-
-### Template Management
-
-KoboldAPI supports various instruction formats through templates. The `InstructTemplate` class handles this automatically:
-
-```python
-from koboldapi.templates import InstructTemplate
-
-template = InstructTemplate("./templates", "http://localhost:5001")
-
-# Wrap a prompt with the appropriate template
-wrapped_prompt = template.wrap_prompt(
-    instruction="Explain quantum computing",
-    content="Focus on qubits and superposition",
-    system_instruction="You are a quantum physics expert"
-)
-```
-
-## Example Applications
-
-### Text Processing
-
-The library includes example scripts for various text processing tasks:
-
-```python
-from koboldapi import KoboldAPICore
-from koboldapi.chunking.processor import ChunkingProcessor
-
-# Initialize core with config
-config = {
-    "api_url": "http://localhost:5001",
-    "templates_directory": "./templates"
-}
-core = KoboldAPICore(config)
-
-# Process a text file
-processor = ChunkingProcessor(core.api_client, max_chunk_length=2048)
-chunks, metadata = processor.chunk_file("document.txt")
-
-# Generate summary for each chunk
-for chunk, _ in chunks:
-    summary = core.api_client.generate(
-        prompt=core.template_wrapper.wrap_prompt(
-            instruction="Summarize this text",
-            content=chunk
-        ),
-        max_length=200
-    )
-    print(summary)
-```
-
-### Image Processing
-
-Process images:
-
-```python
-from koboldapi import KoboldAPICore
-from pathlib import Path
-
-# Initialize core
-config = {
-    "api_url": "http://localhost:5001",
-    "templates_directory": "./templates"
-}
-core = KoboldAPICore(config)
-
-# Process image
-image_path = Path("image.png")
-with open(image_path, "rb") as f:
-    image_data = base64.b64encode(f.read()).decode()
-
-result = core.api_client.generate(
-    prompt=core.template_wrapper.wrap_prompt(
-        instruction="Extract text from this image",
-        system_instruction="You are an OCR system"
-    ),
-    images=[image_data],
+# Analyze an image
+result, output_path = image_processor.process_image(
+    "path/to/image.jpg",
+    instruction="Describe what you see in this image",
     temperature=0.1
 )
 print(result)
 ```
 
-
-## Advanced Features
-
-### Custom Template Creation
-
-Create custom instruction templates for different models:
+### Video Processing
 
 ```python
-{
-    "name": ["vicuna-7b", "vicuna-13b"],
-    "system_start": "### System:\n",
-    "system_end": "\n\n",
-    "user_start": "### Human: ",
-    "user_end": "\n\n",
-    "assistant_start": "### Assistant: ",
-    "assistant_end": "\n\n"
-}
+from koboldcpp VideoProcessor
+
+# Initialize video processor
+video_processor = VideoProcessor(core)
+
+# Analyze a video
+results = video_processor.analyze_video(
+    "path/to/video.mp4"
+)
+print(results["final_summary"])
 ```
 
-### Generation Parameters
+## Core Components
 
-Fine-tune generation settings:
+### KoboldAPICore
+
+The central component that manages API communication and provides access to core functionality.
 
 ```python
-response = api.generate(
-    prompt="Write a story:",
-    max_length=500,
-    temperature=0.8,      # Higher = more creative
-    top_p=0.9,           # Nucleus sampling threshold
-    top_k=40,            # Top-k sampling threshold
-    rep_pen=1.1,         # Repetition penalty
-    rep_pen_range=256,   # How far back to apply rep penalty
-    min_p=0.05          # Minimum probability threshold
+from koboldapi import KoboldAPICore
+
+core = KoboldAPICore()
+
+# Get model information
+model_info = core.get_model_info()
+
+# Test connection
+is_connected = core.validate_connection()
+```
+
+### Configuration
+
+Use `KoboldAPIConfig` to manage API settings and generation parameters:
+
+```python
+from koboldapi import KoboldAPIConfig
+
+config = KoboldAPIConfig(
+    api_url="http://localhost:5001",
+    api_password="your_password",
+    templates_directory="./templates",
+    translation_language="English",
+    text_completion=False,
+    temp=0.2,
+    top_k=0,
+    top_p=1.0,
+    rep_pen=1.1,
+    min_p=0.02
+)
+
+# Save configuration
+config.to_json("config.json")
+
+# Load configuration
+loaded_config = KoboldAPIConfig.from_json("config.json")
+```
+
+## Text Processing
+
+### Chunking
+
+The `ChunkingProcessor` splits large texts into manageable chunks for LLM processing:
+
+```python
+from koboldapi import ChunkingProcessor
+
+chunker = ChunkingProcessor(core.api_client, max_chunk_length=2048)
+
+# Process text
+chunks = chunker.chunk_text("Your long text content here")
+
+# Process file (supports many document types)
+chunks, metadata = chunker.chunk_file("path/to/document.pdf")
+```
+
+### Templates
+
+The library supports custom instruction templates for different models:
+
+```python
+from koboldapi import InstructTemplate
+
+template_wrapper = InstructTemplate(
+    url="http://localhost:5001"
+)
+
+# Format prompt with template
+formatted_prompt = template_wrapper.wrap_prompt(
+    instruction="Analyze this text",
+    content="Content to analyze",
+    system_instruction="You are a helpful assistant"
 )
 ```
 
-### Error Handling
+## Image Processing
 
-Implement robust error handling:
+The `ImageProcessor` handles image analysis with automatic resizing and optimization:
+
+```python
+from koboldapi import ImageProcessor
+
+processor = ImageProcessor(
+    core,
+    resize_mode='standard',  # or 'qwen'
+    max_pixels=1920 * 1080,
+    min_pixels=256 * 256
+)
+
+# Process single image
+result, output_path = processor.process_image(
+    "image.jpg",
+    instruction="Describe this image",
+    temperature=0.1
+)
+
+# Process batch of images
+results = processor.process_batch(
+    ["image1.jpg", "image2.jpg"],
+    instruction="Describe each image",
+    output_dir="./output"
+)
+```
+
+## Video Processing
+
+The `VideoProcessor` handles video analysis with frame extraction and sequential processing:
+
+```python
+from koboldapi import VideoProcessor
+
+processor = VideoProcessor(
+    core,
+    resize_mode='standard',  # or 'qwen'
+    max_pixels=1920 * 1080,
+    min_pixels=256 * 256
+)
+
+# Analyze video
+results = processor.analyze_video(
+    "video.mp4",
+    max_frames=64,
+    batch_size=8,
+    output_dir="./output"
+)
+
+# Access results
+print(results["final_summary"])
+for analysis in results["analysis"]:
+    print(f"Batch {analysis['batch']}: {analysis['analysis']}")
+```
+
+## Utilities
+
+### Image Utilities
+
+```python
+from koboldapi.utils.image_utils import (
+    calculate_resize_dimensions,
+    estimate_image_tokens
+)
+
+# Calculate new dimensions
+new_width, new_height = calculate_resize_dimensions(
+    width=1920,
+    height=1080,
+    max_pixels=1920 * 1080,
+    min_pixels=256 * 256
+)
+
+# Estimate tokens
+token_count = estimate_image_tokens(width=800, height=600)
+```
+
+### Qwen Resizer
+
+For Qwen-VL compatible resizing:
+
+```python
+from koboldapi.utils.qwen_resizer import (
+    qwen_resize,
+    qwen_frame_count
+)
+
+# Resize dimensions
+new_height, new_width = qwen_resize(
+    height=1080,
+    width=1920,
+    factor=28
+)
+
+# Calculate frame count
+n_frames = qwen_frame_count(
+    total_frames=100,
+    video_fps=30,
+    fps_max_frames=64
+)
+```
+
+## Error Handling
+
+The library provides custom exceptions for error handling:
 
 ```python
 from koboldapi import KoboldAPIError
 
 try:
-    response = api.generate(prompt="Test prompt")
+    result = core.api_client.generate("prompt")
 except KoboldAPIError as e:
-    print(f"API Error: {e}")
-except Exception as e:
-    print(f"Unexpected error: {e}")
+    print(f"API error: {e}")
 ```
 
-## Performance Optimization
+## Configuration Files
 
-### Context Management
+Example JSON configuration file:
 
-Optimize token usage:
+```json
+{
+    "api_url": "http://localhost:5001",
+    "api_password": "your_password",
+    "templates_directory": "./templates",
+    "translation_language": "English",
+    "text_completion": false,
+    "temp": 0.2,
+    "top_k": 0,
+    "top_p": 1.0,
+    "rep_pen": 1.1,
+    "min_p": 0.02
+}
+```
+
+## Practical Examples
+
+Here are some practical examples demonstrating real-world applications of the library.
+
+### Package Theft Detection from Security Footage
 
 ```python
-# Get max context length
-max_length = api.get_max_context_length()
+from koboldapi import KoboldAPICore, VideoProcessor
 
-# Count tokens in prompt
-token_count = api.count_tokens(prompt)["count"]
+# Initialize
+core = KoboldAPICore({
+    "api_url": "http://localhost:5001",
+    "api_password": "",
+    "templates_directory": "./templates"
+})
 
-# Ensure we stay within limits
-available_tokens = max_length - token_count
-response_length = min(desired_length, available_tokens)
+# Create security-focused video processor
+processor = VideoProcessor(
+    core,
+    resize_mode='qwen'  # Better for detail detection
+)
+
+# Configure security-specific prompts
+system_prompt = """You are a security analysis assistant. Focus on identifying 
+and describing any suspicious behavior, particularly related to packages or 
+deliveries. Note timestamps, descriptions of individuals, and potential 
+security concerns."""
+
+instruction = """Analyze this segment of security footage. Look specifically for:
+1. Any interaction with packages or mail
+2. People approaching the property
+3. Suspicious behavior
+4. Vehicle descriptions
+Provide timestamps and detailed descriptions of relevant activity."""
+
+# Process video with security focus
+results = processor.analyze_video(
+    "security_footage.mp4",
+    max_frames=128,  # More frames for better coverage
+    batch_size=8,
+    output_dir="security_analysis",
+    system_instruction=system_prompt,
+    instruction=instruction
+)
+
+# Print analysis
+print(results["final_summary"])
 ```
 
-### Batch Processing
-
-Handle multiple inputs efficiently:
+### OCR for Handwritten Text
 
 ```python
-async def process_batch(prompts):
-    results = []
-    for prompt in prompts:
-        async for token in api.stream_generate(prompt):
-            results.append(token)
-    return results
+from koboldapi import KoboldAPICore, ImageProcessor
+
+# Initialize
+core = KoboldAPICore({
+    "api_url": "http://localhost:5001",
+    "api_password": "", # optional
+    "templates_directory": "./templates" # optional
+})
+
+processor = ImageProcessor(core)
+
+system_prompt = """You are an OCR assistant specializing in handwriting recognition.
+Carefully analyze the handwriting and provide:
+1. The exact transcribed text
+2. Confidence notes about any unclear words
+3. Alternative interpretations for ambiguous writing"""
+
+instruction = """Transcribe the handwritten text in this image. If any parts are 
+unclear, provide your best interpretation and note your uncertainty. Maintain 
+original line breaks and formatting where visible."""
+
+processor.process_batch(
+    ["handwriting1.png", "handwriting2.jpeg"],
+    instruction=instruction,
+    system_instruction=system_prompt,
+    output_dir="ocr_results", # Will save results here
+    temperature=0.1  # Low temperature required
+)
 ```
 
-## Troubleshooting
+### Document Formatting and Professionalization
 
-### Common Issues
-
-1. Connection Errors
 ```python
-# Test connection
-if not api.validate_connection():
-    print("Cannot connect to API")
+from pathlib import Path
+from koboldapi import KoboldAPICore, ChunkingProcessor
+
+# Initialize
+core = KoboldAPICore({
+    "api_url": "http://localhost:5001",
+    "api_password": "",
+    "templates_directory": "./templates"
+})
+
+# Create processor for chunking documents
+processor = ChunkingProcessor(
+    core.api_client,
+    max_chunk_length=2048
+)
+
+# Get document chunks
+doc_path = Path("draft_document.txt")  # Can also be PDF
+chunks, metadata = processor.chunk_file(doc_path)
+
+# Configure formatting prompts
+system_prompt = """You are a professional document editor. Improve the text while 
+maintaining its core meaning and intent. Focus on:
+1. Correct spelling and grammar
+2. Professional tone and vocabulary
+3. Consistent formatting
+4. Clear paragraph structure"""
+
+instruction = """Edit this text to be more professional while keeping its meaning.
+Fix any errors in spelling, grammar, or formatting. Ensure consistency in style 
+and maintain appropriate business tone."""
+
+# Process each chunk
+formatted_chunks = []
+for chunk, _ in chunks:
+    prompt = core.template_wrapper.wrap_prompt(
+        instruction=instruction,
+        content=chunk,
+        system_instruction=system_prompt
+    )
+    
+    result = core.api_client.generate(
+        prompt=prompt,
+        max_length=len(chunk) // 2,
+        temperature=0.1,
+        top_p=0.9,
+        rep_pen=1.1
+    )
+    formatted_chunks.append(result)
+
+# Save formatted document
+output_path = Path("formatted_document.txt")
+output_path.write_text(
+    "\n\n".join(formatted_chunks),
+    encoding='utf-8'
+)
 ```
 
-2. Template Errors
-```python
-# Check if template exists
-if not template.get_template():
-    print("No matching template found for model")
+These examples demonstrate how to use the library for specific real-world tasks. Each example:
+- Uses appropriate processor types
+- Configures task-specific prompts
+- Adjusts parameters for optimal results
+- Includes proper error handling
+- Provides clear output formatting
+
+The library's modular design makes it easy to adapt these examples for similar use cases or combine them for more complex applications.
+
+## Template Files
+
+If you have a model with a custom instruct template, you can create an adapter for it.
+
+Example instruction template (templates/alpaca.json):
+
+```json
+{
+    "name": ["alpaca"],
+    "system_start": "### System:\n",
+    "system_end": "\n\n",
+    "user_start": "### Human: ",
+    "user_end": "\n\n",
+    "assistant_start": "### Assistant: "
+}
 ```
-
-3. Generation Errors
-```python
-# Monitor generation status
-status = api.check_generation()
-if status is None:
-    print("Generation failed or was interrupted")
-```
-
-## Contributing
-
-Contributions to improve these tools are welcome. Please submit issues and pull requests on GitHub.
-
-### Development Setup
-
-1. Clone the repository
-2. Install development dependencies:
-```bash
-pip install -e ".[dev]"
-```
-3. Run tests:
-```bash
-pytest tests/
-```
-
-## License
-
-This project is licensed under the GPLv3 license.
