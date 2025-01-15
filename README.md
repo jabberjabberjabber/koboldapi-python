@@ -435,15 +435,6 @@ output_path.write_text(
 )
 ```
 
-These examples demonstrate how to use the library for specific real-world tasks. Each example:
-- Uses appropriate processor types
-- Configures task-specific prompts
-- Adjusts parameters for optimal results
-- Includes proper error handling
-- Provides clear output formatting
-
-The library's modular design makes it easy to adapt these examples for similar use cases or combine them for more complex applications.
-
 ## Template Files
 
 If you have a model with a custom instruct template, you can create an adapter for it.
