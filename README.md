@@ -139,7 +139,7 @@ chunks, metadata = chunker.chunk_file("path/to/document.pdf")
 
 ### Templates
 
-The library supports custom instruction templates for different models:
+The library supports will wrap content with a detected template or a custom template:
 
 ```python
 from koboldapi import InstructTemplate
