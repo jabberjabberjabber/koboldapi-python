@@ -28,17 +28,10 @@ pip install -e .
 ### Basic Text Generation
 
 ```python
-from koboldapi import KoboldAPICore, KoboldAPIConfig
-
-# Initialize with configuration
-config = KoboldAPIConfig(
-    api_url="http://localhost:5001",
-    api_password="your_password",
-    templates_directory="./templates"
-)
+from koboldapi import KoboldAPICore
 
 # Create core instance
-core = KoboldAPICore(config.__dict__)
+core = KoboldAPICore()
 
 # Generate text
 response = core.api_client.generate(
