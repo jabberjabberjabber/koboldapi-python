@@ -62,7 +62,7 @@ print(result)
 ### Video Processing
 
 ```python
-from koboldcpp import VideoProcessor
+from koboldapi import VideoProcessor
 
 # Initialize video processor
 video_processor = VideoProcessor(core)
