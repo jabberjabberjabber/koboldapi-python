@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "koboldapi"
-version = "0.5.0"
+version = "0.5.1"
 description = "Python library for interacting with KoboldCPP API"
 authors = [{name = "jabberjabberjabber"}]
 license = {text = "GNU General Public License v3.0"}
@@ -17,7 +17,7 @@ dependencies = [
     "pillow-heif",
     "rawpy",
     "extractous",
-    "jinja2"
+    "jinja2",
 	"regex"
 ]
 

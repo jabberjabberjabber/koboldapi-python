@@ -17,11 +17,6 @@ A Python library for interacting with KoboldCPP API, providing robust text and i
 pip install koboldapi
 ```
 
-Required dependencies for full functionality:
-```bash
-pip install extractous pillow-heif rawpy
-```
-
 ## Quick Start
 
 ### Basic API Usage
@@ -98,55 +93,12 @@ def analyze_image(image_path: str, instruction: str = "Describe this image"):
     return api.generate(
         prompt=prompt,
         images=[encoded_image],
-        temperature=0.7
+        temperature=0.1
     )
 
 # Use the function
 result = analyze_image("photo.jpg", "What objects do you see in this image?")
 print(result)
-```
-
-### Chat with Context
-
-```python
-from koboldapi import KoboldAPICore
-
-class ChatSession:
-    def __init__(self, api_url: str):
-        self.core = KoboldAPICore(api_url)
-        self.template = self.core.template_wrapper
-        self.history = []
-        
-    def add_message(self, role: str, content: str):
-        self.history.append({"role": role, "content": content})
-        
-    def get_response(self, user_input: str) -> str:
-        # Add user message to history
-        self.add_message("user", user_input)
-        
-        # Build context from history
-        context = ""
-        for msg in self.history[-5:]:  # Keep last 5 messages for context
-            if msg["role"] == "user":
-                context += f"User: {msg['content']}\n"
-            else:
-                context += f"Assistant: {msg['content']}\n"
-                
-        # Generate response using template
-        prompt = self.template.wrap_prompt(
-            instruction="Respond to the user's message",
-            content=context
-        )
-        
-        response = self.core.api_client.generate(prompt)
-        self.add_message("assistant", response)
-        
-        return response
-
-# Example usage
-chat = ChatSession("http://localhost:5001")
-response = chat.get_response("Tell me about neural networks")
-print(response)
 ```
 
 ### Advanced Features
@@ -209,11 +161,3 @@ except KoboldAPIError as e:
 4. **Resource Management**: For large files or batch processing, consider using async methods and proper cleanup.
 
 5. **Image Processing**: Set appropriate max_dimension and quality parameters based on your model's requirements.
-
-## Contributing
-
-Contributions are welcome! Please check our GitHub repository for guidelines.
-
-## License
-
-Apache License 2.0
