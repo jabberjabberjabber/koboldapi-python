@@ -1,15 +1,31 @@
 # KoboldAPI
 
-A Python library for interacting with KoboldCPP API, providing robust text and image processing capabilities with built-in chunking and templating support.
+A Python library for interacting with KoboldCPP APIs, providing high-level abstractions for text processing, image handling, and generation tasks.
 
 ## Features
 
-- Text and document processing with Apache Tika integration
-- Smart chunking with regex-based natural language boundaries
-- Image processing with support for various formats including RAW
-- Chat templating system supporting multiple LLM formats
-- Async and streaming generation capabilities
-- Built-in error handling and retry mechanisms
+- **Text Processing**
+  - Intelligent text chunking 
+  - Streaming generation capabilities
+  - Token counting and management
+
+- **Image Processing**
+  - Support for multiple image formats (JPEG, PNG, GIF, TIFF, WEBP, HEIF, RAW)
+  - Automatic image resizing and optimization
+  - RAW image processing with thumbnail extraction
+  - Base64 encoding for API transmission
+
+- **Template Management**
+  - Flexible template system for different LLM models
+  - Custom template directory support
+  - Built-in default templates
+  - Jinja2 templating integration
+
+- **API Integration**
+  - Robust error handling
+  - Connection management
+  - Streaming support
+  - Comprehensive API endpoint coverage
 
 ## Installation
 
@@ -19,145 +35,185 @@ pip install koboldapi
 
 ## Quick Start
 
-### Basic API Usage
+### Text Processing Example
+
+```python
+from koboldapi import KoboldAPICore, ChunkingProcessor
+
+# Initialize the API client
+core = KoboldAPICore(api_url="http://localhost:5001")
+
+# Create a chunking processor
+chunker = ChunkingProcessor(core.api_client, max_chunk_length=2048)
+
+# Process text
+chunks, metadata = chunker.chunk_file("document.txt")
+for chunk, token_count in chunks:
+    response = core.wrap_and_generate(
+        instruction="Summarize this text:",
+        content=chunk
+    )
+    print(response)
+```
+
+### Image Processing Example
+
+```python
+from koboldapi import KoboldAPICore, ImageProcessor
+
+# Initialize processors
+core = KoboldAPICore(api_url="http://localhost:5001")
+processor = ImageProcessor(max_dimension=1024)
+
+# Process image
+encoded_image, img_path = processor.process_image("image.jpg")
+response = core.wrap_and_generate(
+    instruction="Describe this image:",
+    images=[encoded_image]
+)
+print(response)
+```
+
+### Streaming Generation Example
 
 ```python
 from koboldapi import KoboldAPICore
+import asyncio
 
-# Initialize the core API client
-api = KoboldAPICore("http://localhost:5001")
+async def stream_example():
+    core = KoboldAPICore(api_url="http://localhost:5001")
+    
+    # Stream tokens as they're generated
+    async for token in core.api_client.stream_generate(
+        prompt="Write a story about a robot:",
+        max_length=200
+    ):
+        print(token, end='', flush=True)
+    
+    # Or collect all tokens into final result
+    result = await core.api_client.generate_sync(
+        prompt="Write a story about a robot:",
+        max_length=200
+    )
+    print(result)
 
-# Simple generation
-response = api.api_client.generate("What is the capital of France?")
-print(response)
-
-# Get model info
-model_info = api.get_model_info()
-print(f"Model: {model_info['name']}")
-print(f"Context Length: {model_info['context_length']}")
+if __name__ == "__main__":
+    asyncio.run(stream_example())
+	
 ```
 
-### Processing Text Documents
+## Detailed Documentation
+
+### KoboldAPICore
+
+The main interface for interacting with KoboldCPP APIs.
 
 ```python
-import asyncio
-from pathlib import Path
-from koboldapi import KoboldAPICore, ChunkingProcessor
+core = KoboldAPICore(
+    api_url="http://localhost:5001",
+    api_password=None,  # Optional API password
+    generation_params={  # Optional generation parameters
+        'temp': 0.7,
+        'top_k': 40,
+        'top_p': 0.9
+    },
+    templates_directory="path/to/templates"  # Optional custom templates
+)
+```
 
-async def process_document(file_path: str):
-    # Initialize API
-    core = KoboldAPICore("http://localhost:5001")
-    
-    # Create processor with 2048 token chunks
-    processor = ChunkingProcessor(core.api_client, max_chunk_length=2048)
-    
-    # Process document - works with any format supported by Apache Tika
-    chunks, metadata = processor.chunk_file(Path(file_path))
-    
-    print(f"Document metadata: {metadata}")
-    print(f"Number of chunks: {len(chunks)}")
-    
-    # Process each chunk
-    for i, (chunk, token_count) in enumerate(chunks):
-        response = core.api_client.generate(
-            prompt=chunk,
-            max_length=1024
-        )
-        print(f"\nChunk {i+1} ({token_count} tokens):")
-        print(response)
+### Text Processing
 
-# Run with asyncio
-asyncio.run(process_document("document.pdf"))
+The ChunkingProcessor class handles text segmentation and processing:
+
+```python
+chunker = ChunkingProcessor(
+    api_client,  # KoboldAPI instance
+    max_chunk_length=2048,  # Maximum tokens per chunk
+    max_total_chunks=1000  # Maximum number of chunks
+)
+
+# Process a file
+chunks, metadata = chunker.chunk_file("document.txt")
+
+# Process raw text
+chunks = chunker.chunk_text("Your text content here")
 ```
 
 ### Image Processing
 
-```python
-from koboldapi import ImageProcessor, InstructTemplate, KoboldAPI
-
-def analyze_image(image_path: str, instruction: str = "Describe this image"):
-    # Initialize components
-    api = KoboldAPI("http://localhost:5001")
-    processor = ImageProcessor(max_dimension=1024)
-    template = InstructTemplate("http://localhost:5001")
-    
-    # Process image
-    encoded_image, _ = processor.process_image(image_path)
-    if not encoded_image:
-        raise ValueError("Failed to process image")
-    
-    # Create prompt with template
-    prompt = template.wrap_prompt(instruction)
-    
-    # Generate description
-    return api.generate(
-        prompt=prompt,
-        images=[encoded_image],
-        temperature=0.1
-    )
-
-# Use the function
-result = analyze_image("photo.jpg", "What objects do you see in this image?")
-print(result)
-```
-
-### Advanced Features
-
-#### Streaming Generation
+The ImageProcessor class handles image preparation and optimization:
 
 ```python
-import asyncio
-from koboldapi import KoboldAPI
-
-async def stream_response(prompt: str):
-    api = KoboldAPI("http://localhost:5001")
-    
-    async for token in api.stream_generate(prompt):
-        print(token, end='', flush=True)
-    print()
-
-# Use with asyncio
-asyncio.run(stream_response("Write a short story about a robot"))
-```
-
-#### Custom Chunking Configuration
-
-```python
-from koboldapi import ChunkingProcessor, KoboldAPI
-
-# Initialize with custom chunking parameters
-processor = ChunkingProcessor(
-    api_client=KoboldAPI("http://localhost:5001"),
-    max_chunk_length=4096,
-    max_total_chunks=1000
+processor = ImageProcessor(
+    max_dimension=1024,  # Maximum image dimension
+    patch_sizes=[8, 14, 16, 32],  # Patch size options
+    max_file_size=50 * 1024 * 1024  # Maximum file size in bytes
 )
 
-# Process with metadata
-chunks, metadata = processor.chunk_file("large_document.txt")
+# Process an image
+encoded_image, path = processor.process_image("image.jpg")
+```
+
+### Template Management
+
+Custom templates can be provided in JSON format:
+
+```json
+{
+    "template_name": {
+        "name": ["model_name_pattern"],
+        "system_start": "\nSystem: ",
+        "system_end": "\n",
+        "user_start": "User: ",
+        "user_end": "\n",
+        "assistant_start": "Assistant: "
+    }
+}
+```
+
+## Command Line Tools
+
+The package includes example scripts for common tasks:
+
+### Text Processing Script
+
+```bash
+python text-example.py input.txt \
+    --task translate \
+    --api-url http://localhost:5001 \
+    --language French \
+    --max-chunk-size 8192
+```
+
+Available tasks:
+- translate: Translate text to specified language
+- summary: Generate text summary
+- correct: Fix grammar and spelling
+- distill: Create concise version
+
+### Image Processing Script
+
+```bash
+python image-example.py image.jpg \
+    --api-url http://localhost:5001 \
+    --instruction "Describe the image in detail."
 ```
 
 ## Error Handling
 
-The library provides custom exceptions for proper error handling:
+The library provides custom exceptions for error handling:
 
 ```python
-from koboldapi import KoboldAPIError
-
 try:
-    api = KoboldAPI("http://localhost:5001")
-    response = api.generate("Test prompt")
+    result = core.wrap_and_generate(instruction="Your instruction")
 except KoboldAPIError as e:
     print(f"API Error: {e}")
 ```
 
-## Best Practices
+## Contributing
 
-1. **Chunking**: Always use the ChunkingProcessor for large documents to ensure proper token management.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-2. **Templates**: Use the InstructTemplate system to ensure proper formatting for different models.
+## License
 
-3. **Error Handling**: Implement proper error handling using try/except blocks with KoboldAPIError.
-
-4. **Resource Management**: For large files or batch processing, consider using async methods and proper cleanup.
-
-5. **Image Processing**: Set appropriate max_dimension and quality parameters based on your model's requirements.
+This project is licensed under the GPLv3 License - see the LICENSE file for details.
