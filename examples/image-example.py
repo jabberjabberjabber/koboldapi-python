@@ -1,24 +1,20 @@
 import argparse
 from pathlib import Path
 
-from koboldapi import ImageProcessor, InstructTemplate, KoboldAPI
+from koboldapi import ImageProcessor, KoboldAPICore
 
 def process_image(api_url: str, image_path: Path, instruction: str):
-    """ Process an image through the LLM with proper error handling.
+    """ Process an image through the LLM.
     """
-    api_client = KoboldAPI(api_url)
+    core = KoboldAPICore(api_url, temperature=0)
     processor = ImageProcessor(max_dimension=1024)
-    wrapper = InstructTemplate(api_url)
     encoded_image, img_path = processor.process_image(str(image_path))
     if not encoded_image:
         print(f"Failed to process image: {img_path}")
         return
-    
-    prompt = wrapper.wrap_prompt(instruction) 
-    return api_client.generate(
-        prompt=prompt, 
-        images=[encoded_image], 
-        temperature=0
+    return core.wrap_and_generate(
+        instruction, 
+        images=[encoded_image]
     )
 
 def main():

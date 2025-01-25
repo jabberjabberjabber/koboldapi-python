@@ -12,20 +12,21 @@ class KoboldAPIError(Exception):
 class KoboldAPI:
     def __init__(self, api_url: str, api_password: Optional[str] = None,
                  generation_params: Optional[Dict] = None,
-                 templates_directory: Optional[str] = None):
+                 **kwargs):
         self.api_url = api_url.rstrip('/')
         self.api_password = api_password
-        self.templates_directory = templates_directory
         self.generation_params = {
             'temp': 0,
             'top_k': 0,
             'top_p': 1.0,
             'rep_pen': 1.0,
-            'min_p': 0.05
+            'min_p': 0.05,
+            **kwargs
+        
         }
         if generation_params:
             self.generation_params.update(generation_params)
-            
+             
         self.genkey = f"KCPP{''.join(str(random.randint(0, 9)) for _ in range(4))}"
         self.headers = {
             "Content-Type": "application/json",
@@ -103,14 +104,13 @@ class KoboldAPI:
             raise KoboldAPIError("API returned invalid JSON response")
 
     def generate(self, prompt: str, max_length: int = 300,
-                temperature: Optional[float] = None,
-                top_p: Optional[float] = None,
                 **kwargs) -> str:
+        generation_settings = {**self.generation_params, **kwargs}
         payload = {
             "prompt": prompt,
             "max_length": max_length,
             "genkey": self.genkey,
-            **kwargs
+            **generation_settings
         }
         result = self._call_api("generate", payload)
         if not result.get("results"):
@@ -239,10 +239,11 @@ class KoboldAPI:
             Returns:
                 AsyncIterator yielding tokens as they are generated
         """
+        generation_settings = {**self.generation_params, **kwargs}
         payload = {
             "prompt": prompt,
             "genkey": self.genkey,
-            **{k: v for k, v in kwargs.items() if v is not None}
+            **generation_settings
         }
         url = f"{self.api_url}/api/extra/generate/stream"
         

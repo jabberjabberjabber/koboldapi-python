@@ -9,19 +9,29 @@ class KoboldAPICore:
     
     def __init__(self, api_url: str, api_password: Optional[str] = None,
                  generation_params: Optional[Dict] = None,
-                 templates_directory: Optional[str] = None):
+                 templates_directory: Optional[str] = None,
+                 **kwargs):
         """Initialize with direct parameters"""
         self.api_client = KoboldAPI(
             api_url=api_url,
             api_password=api_password,
             generation_params=generation_params,
-            templates_directory=templates_directory
+            **kwargs
         )
         
         self.template_wrapper = InstructTemplate(
             api_url=api_url,
             templates_dir=templates_directory
         )
+    def wrap_and_generate(self, instruction: str, 
+                        system_instruction: Optional[str] = "You are a helpful assistant.",
+                        content: Optional[str] = "",
+                        **kwargs
+                        ):
+        """ Wrap instruction in template and generate response """
+        prompt = self.template_wrapper.wrap_prompt(instruction=instruction, system_instruction=system_instruction, content=content)
+        return self.api_client.generate(prompt=prompt, **kwargs)
+        
     def get_model_info(self):
         """ Get current model details """
         return {
