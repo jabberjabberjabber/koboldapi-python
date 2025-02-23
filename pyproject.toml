@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "koboldapi"
-version = "0.5.1"
+version = "0.5.3"
 description = "Python library for interacting with KoboldCPP API"
 authors = [{name = "jabberjabberjabber"}]
 license = {text = "GNU General Public License v3.0"}
@@ -18,11 +18,14 @@ dependencies = [
     "rawpy",
     "extractous",
     "jinja2",
-	"regex"
+    "regex"
 ]
 
-[project.optional-dependencies]
+[project.scripts]
+kobold-image = "examples.image_example:main"
+kobold-text = "examples.text_example:main"
 
+[project.optional-dependencies]
 dev = [
     "black",
     "isort",
@@ -36,3 +39,8 @@ target-version = ["py38"]
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}}
+include-package-data = true
