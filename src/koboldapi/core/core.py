@@ -26,10 +26,11 @@ class KoboldAPICore:
     def wrap_and_generate(self, instruction: str, 
                         system_instruction: Optional[str] = "You are a helpful assistant.",
                         content: Optional[str] = "",
+                        model_name: Optional[str] = None,
                         **kwargs
                         ):
         """ Wrap instruction in template and generate response """
-        prompt = self.template_wrapper.wrap_prompt(instruction=instruction, system_instruction=system_instruction, content=content)
+        prompt = self.template_wrapper.wrap_prompt(instruction=instruction, system_instruction=system_instruction, content=content, model_name=model_name)
         return self.api_client.generate(prompt=prompt, **kwargs)
         
     def get_model_info(self):

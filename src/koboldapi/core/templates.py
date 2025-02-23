@@ -115,13 +115,18 @@ class InstructTemplate:
         
 
     def wrap_prompt(self, instruction: str, content: str = "",
-                   system_instruction: str = "") -> str:
+                   system_instruction: str = "", model_name = None) -> str:
         """ Format a prompt using templates. """
         user_text = f"{content}\n\n{instruction}" if content else instruction
+        adapter = {}
         prompt_parts = []
         wrapped = []
-        
-        if adapter := self.get_template()["adapter"]:
+        if model_name is not None:
+            adapter = self._template_from_name(model_name, default_templates)
+        else:
+            adapter = self.get_template()["adapter"]
+            
+        if adapter: 
             if system_instruction:
                 prompt_parts.extend([
                     adapter["system_start"],
