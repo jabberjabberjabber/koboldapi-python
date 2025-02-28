@@ -14,7 +14,7 @@ from .core.templates import InstructTemplate
 from .image.processor import ImageProcessor
 from .chunking.processor import ChunkingProcessor
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 __author__ = "jabberjabberjabber"
 __license__ = "GNU General Public License v3.0"
 
