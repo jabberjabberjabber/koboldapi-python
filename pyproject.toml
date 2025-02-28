@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "koboldapi"
-version = "0.5.3"
+version = "0.5.4"
 description = "Python library for interacting with KoboldCPP API"
 authors = [{name = "jabberjabberjabber"}]
 license = {text = "GNU General Public License v3.0"}
