@@ -230,6 +230,18 @@ default_templates = {
         "assistant_start": "<|start_of_role|>assistant<|end_of_role|>",
         "assistant_end": "<|end_of_text|>\n"
     },
+    "granite3": {
+        "name": [
+            "Granite-3.2"
+        ],
+        "system_start": "<|system|>\n",
+        "system_instruction": "You are a helpful assistant.",
+        "system_end": "\n",
+        "user_start": "<|user|>\n",
+        "user_end": "\n",
+        "assistant_start": "<|assistant|>\n",
+        "assistant_end": "\n"
+    },
     "hermes3": {
         "name": [
             "hermes3"
@@ -266,6 +278,7 @@ default_templates = {
             "reflection",
             "llama3-groq-tool-use",
             "firefunction-v2"
+            "joy"
         ],
         "system_start": "<|start_header_id|>system<|end_header_id|>\n\n",
         "system_end": "<|eot_id|>",
@@ -387,6 +400,18 @@ default_templates = {
         "user_end": "\n\n",
         "assistant_start": "### Assistant:\n",
         "assistant_end": "\n\n"
+    },
+    "olm": {
+        "name": [
+            "olmOCR"
+        ],
+        "system_start": "<|im_start|>system\n",
+        "system_instruction": "",
+        "system_end": "<|im_end|>\n",
+        "user_start": "<|im_start|>user\n",
+        "user_end": "<|im_end|>\n",
+        "assistant_start": "<|im_start|>assistant\n",
+        "assistant_end": ""
     },
 	"OpenChat": {
         "name": [
